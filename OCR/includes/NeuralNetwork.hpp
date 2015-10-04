@@ -60,7 +60,7 @@ namespace nn
 			NeuralNetwork(const NeuralNetwork&& other);
 			NeuralNetwork& operator=(const NeuralNetwork& other);
 			
-			std::vector<std::pair<bool, double> > update(const std::vector<bool>& input) const;
+			std::vector<double> update(const std::vector<double>& input) const;
 			
 			void save(const std::string& filename) const;
 			void load(const std::string& filename);

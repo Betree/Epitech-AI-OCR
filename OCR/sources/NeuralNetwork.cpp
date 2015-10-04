@@ -1,6 +1,10 @@
 #include <random>
 #include <algorithm>
+#include <cmath>
 #include "NeuralNetwork.hpp"
+
+#define BIAS											-1
+#define ACTIVATION_RESPONSE	1
 
 namespace nn
 {
@@ -55,18 +59,18 @@ namespace nn
 		return *this;
 	}
 	
-	std::vector<std::pair<bool, double> > NeuralNetwork::update(const std::vector<bool>& userInput) const
+	static double Sigmoid(double value)
+	{
+		return (1.0 / (1.0 + std::exp(-value / ACTIVATION_RESPONSE)));
+	}
+	
+	std::vector<double> NeuralNetwork::update(const std::vector<double>& userInput) const
 	{
 		if (userInput.size() != this->_layers[0]->getInputNumber())
 			throw "ERROR PA KOOL";
 
-		std::vector<std::pair<bool, double> > input(userInput.size());
-		std::vector<std::pair<bool, double> > output;
-		
-		for (unsigned int i = 0; i < userInput.size(); ++i)
-		{
-			input[i] = std::pair<bool, double>(userInput[i], userInput[i]);
-		}
+		std::vector<double> input(userInput);
+		std::vector<double> output;
 
 		for (unsigned int i = 0; i < this->_layers.size(); ++i)			// For each layer
 		{
@@ -83,10 +87,13 @@ namespace nn
 				
 				for (unsigned int k = 0; k < input.size(); ++k)			// For each input
 				{
-					activation += input[k].first * currentNeuron.getWeight(k);
+					activation += input[k] * currentNeuron.getWeight(k);
 				}
 				
-				output[j] = std::pair<bool, double>(activation >= currentNeuron.getThreshold(), std::max<double>(0, (activation - currentNeuron.getThreshold()) / (1 - currentNeuron.getThreshold())));
+				activation += currentNeuron.getThreshold() * BIAS;
+				output[j] = Sigmoid(activation);
+				
+				/* output[j] = std::pair<bool, double>(activation >= currentNeuron.getThreshold(), std::max<double>(0, (activation - currentNeuron.getThreshold()) / (1 - currentNeuron.getThreshold())));*/
 				
 //				activation 																=> activation
 //				activation / threshold												=> pourcentage d'activation
@@ -191,7 +198,7 @@ namespace nn
 	 
 		// Choose a random mean between 1 and 6
 		std::default_random_engine e1(rd());
-		std::uniform_real_distribution<double> uniform_dist(0, 1);
+		std::uniform_real_distribution<double> uniform_dist(-1, 1);
 
 		for (unsigned int i = 0; i < inputNumber; ++i)
 		{
