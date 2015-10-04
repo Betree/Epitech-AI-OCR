@@ -15,17 +15,21 @@ namespace nn
 	class Neuron
 	{
 		public:
-			Neuron(int inputNumber); // TODO init random
+			Neuron(unsigned int inputNumber); // TODO init random
 			~Neuron();
 			Neuron(const Neuron& other);
 			Neuron(const Neuron&& other);
 			Neuron&	operator=(const Neuron& other);
 
-			double& operator[](unsigned int idx);
-			double operator[](unsigned int idx) const;
+			double& getWeight(unsigned int idx);
+			double getWeight(unsigned int idx) const;
+			
+			double getThreshold() const;
+			void setThreshold(double value);
 			
 		private:
-			std::vector<double> _weights;
+			std::vector<double>	_weights;
+			double						_threshold;
 	};
 	
 	class NeuronLayer
@@ -39,9 +43,12 @@ namespace nn
 
 			Neuron& operator[](unsigned int idx);
 			const Neuron& operator[](unsigned int idx) const;
+			unsigned int size() const;
+			unsigned int getInputNumber() const;
 			
 		private:
 			std::vector<Neuron*> _neurons;
+			unsigned int				_inputNumber;
 	};
 	
 	class NeuralNetwork
@@ -53,7 +60,7 @@ namespace nn
 			NeuralNetwork(const NeuralNetwork&& other);
 			NeuralNetwork& operator=(const NeuralNetwork& other);
 			
-			std::vector<std::pair<bool, float> > update(const std::vector<bool>& input) const;
+			std::vector<std::pair<bool, double> > update(const std::vector<bool>& input) const;
 			
 			void save(const std::string& filename) const;
 			void load(const std::string& filename);
