@@ -1,9 +1,11 @@
+/*
 #define CTOR_DECLARE(name)		name();
 #define DTOR_DECLARE(name)		~name();
 #define CCTOR_DECLARE(name)	name(const name& other);
 #define COPY_DECLARE(name)		name&	operator=(const name& other);
 
 #define COPLIEN_DECLARE(name)	CTOR_DECLARE(name)	CCTOR_DECLARE(name)	DTOR_DECLARE(name)	COPY_DECLARE(name)
+*/
 
 #include <vector>
 #include <string>
@@ -29,7 +31,7 @@ namespace nn
 	class NeuronLayer
 	{
 		public:
-			NeuronLayer(unsigned int inputNumber, unsigned int );
+			NeuronLayer(unsigned int inputNumber, unsigned int neuronNumber);
 			~NeuronLayer();
 			NeuronLayer(const NeuronLayer& other);
 			NeuronLayer(const NeuronLayer&& other);
@@ -45,7 +47,7 @@ namespace nn
 	class NeuralNetwork
 	{
 		public:
-			NeuralNetwork();
+			NeuralNetwork(unsigned int inputNumber, unsigned int outputNumber, const std::vector<unsigned int>& hiddenLayersDefinition);
 			~NeuralNetwork();
 			NeuralNetwork(const NeuralNetwork& other);
 			NeuralNetwork(const NeuralNetwork&& other);
