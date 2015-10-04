@@ -6,6 +6,7 @@
 #define COPLIEN_DECLARE(name)	CTOR_DECLARE(name)	CCTOR_DECLARE(name)	DTOR_DECLARE(name)	COPY_DECLARE(name)
 
 #include <vector>
+#include <string>
 
 namespace nn
 {
@@ -28,11 +29,11 @@ namespace nn
 	class NeuronLayer
 	{
 		public:
-			InputNeuronLayer(unsigned int inputNumber, unsigned int );
-			~InputNeuronLayer();
-			InputNeuronLayer(const InputNeuronLayer& other);
-			InputNeuronLayer(const InputNeuronLayer&& other);
-			InputNeuronLayer& operator=(const InputNeuronLayer& other);
+			NeuronLayer(unsigned int inputNumber, unsigned int );
+			~NeuronLayer();
+			NeuronLayer(const NeuronLayer& other);
+			NeuronLayer(const NeuronLayer&& other);
+			NeuronLayer& operator=(const NeuronLayer& other);
 
 			Neuron& operator[](unsigned int idx);
 			const Neuron& operator[](unsigned int idx) const;
@@ -57,5 +58,5 @@ namespace nn
 			
 		private:
 			std::vector<NeuronLayer*> _layers;
-	}
+	};
 }
