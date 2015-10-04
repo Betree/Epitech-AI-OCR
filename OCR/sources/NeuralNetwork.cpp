@@ -90,7 +90,7 @@ namespace nn
 				}
 				
 				activation += currentNeuron.getThreshold() * BIAS;
-				output[j] = Sigmoid(activation);
+				output.push_back(Sigmoid(activation));
 				
 				/* output[j] = std::pair<bool, double>(activation >= currentNeuron.getThreshold(), std::max<double>(0, (activation - currentNeuron.getThreshold()) / (1 - currentNeuron.getThreshold())));*/
 				
