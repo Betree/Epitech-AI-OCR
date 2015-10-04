@@ -64,12 +64,11 @@ namespace nn
 		return (1.0 / (1.0 + std::exp(-value / ACTIVATION_RESPONSE)));
 	}
 	
-	std::vector<double> NeuralNetwork::update(const std::vector<double>& userInput) const
+	std::vector<double> NeuralNetwork::update(std::vector<double> input) const
 	{
-		if (userInput.size() != this->_layers[0]->getInputNumber())
+		if (input.size() != this->_layers[0]->getInputNumber())
 			throw "ERROR PA KOOL";
 
-		std::vector<double> input(userInput);
 		std::vector<double> output;
 
 		for (unsigned int i = 0; i < this->_layers.size(); ++i)			// For each layer
