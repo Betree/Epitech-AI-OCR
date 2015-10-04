@@ -7,6 +7,6 @@ include_directories(includes)
 
 set(SOURCE_FILES
         includes/NeuralNetwork.hpp
-        sources/NeuralNetwork.cpp)
+        sources/NeuralNetwork.cpp sources/main.cpp)
 
 add_executable(OCR ${SOURCE_FILES})
