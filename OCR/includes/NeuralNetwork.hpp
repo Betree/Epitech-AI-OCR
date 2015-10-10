@@ -7,6 +7,9 @@
 #define COPLIEN_DECLARE(name)	CTOR_DECLARE(name)	CCTOR_DECLARE(name)	DTOR_DECLARE(name)	COPY_DECLARE(name)
 */
 
+#ifndef	NEURALNETWORK_HPP_
+#define	NEURALNETWORK_HPP_
+
 #include <vector>
 #include <string>
 
@@ -23,13 +26,15 @@ namespace nn
 
 			double& getWeight(unsigned int idx);
 			double getWeight(unsigned int idx) const;
+			void setWeight(unsigned int idx, double value);
+			size_t size() const;
 			
-			double getThreshold() const;
-			void setThreshold(double value);
+			double getBias() const;
+			void setBias(double value);
 			
 		private:
 			std::vector<double>	_weights;
-			double						_threshold;
+			double _bias;
 	};
 	
 	class NeuronLayer
@@ -48,9 +53,11 @@ namespace nn
 			
 		private:
 			std::vector<Neuron*> _neurons;
-			unsigned int				_inputNumber;
+			unsigned _inputNumber;
 	};
-	
+
+	typedef std::vector<double>	NeuralFeed;
+
 	class NeuralNetwork
 	{
 		public:
@@ -59,8 +66,15 @@ namespace nn
 			NeuralNetwork(const NeuralNetwork& other);
 			NeuralNetwork(const NeuralNetwork&& other);
 			NeuralNetwork& operator=(const NeuralNetwork& other);
-			
-			std::vector<double> update(std::vector<double> input) const;
+
+			NeuronLayer& operator[](unsigned int idx);
+			const NeuronLayer& operator[](unsigned int idx) const;
+			unsigned int size() const;
+
+			static double sigmoid_prime(double value);
+			static double sigmoid(double value);
+
+			NeuralFeed update(NeuralFeed input) const;
 			
 			void save(const std::string& filename) const;
 			void load(const std::string& filename);
@@ -69,3 +83,5 @@ namespace nn
 			std::vector<NeuronLayer*> _layers;
 	};
 }
+
+#endif	// NEURALNETWORK_HPP_
