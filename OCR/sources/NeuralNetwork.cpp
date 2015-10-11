@@ -3,9 +3,6 @@
 #include <cmath>
 #include "NeuralNetwork.hpp"
 
-#define BIAS											-1
-#define ACTIVATION_RESPONSE	1
-
 namespace nn
 {
 	// NeuronNetwork
@@ -58,13 +55,37 @@ namespace nn
 		}
 		return *this;
 	}
-	
-	static double Sigmoid(double value)
+
+	unsigned int NeuralNetwork::size() const
 	{
-		return (1.0 / (1.0 + std::exp(-value / ACTIVATION_RESPONSE)));
+		return this->_layers.size();
 	}
-	
-	std::vector<double> NeuralNetwork::update(std::vector<double> input) const
+
+	NeuronLayer& NeuralNetwork::operator[](unsigned int idx)
+	{
+		if (idx >= this->_layers.size())
+			throw "OUT OF RANGE";
+		return *this->_layers[idx];
+	}
+
+	const NeuronLayer& NeuralNetwork::operator[](unsigned int idx) const
+	{
+		if (idx >= this->_layers.size())
+			throw "OUT OF RANGE";
+		return *this->_layers[idx];
+	}
+
+	double NeuralNetwork::sigmoid_prime(double value)
+	{
+		return std::exp(value) / std::pow(std::exp(value) + 1, 2);
+	}
+
+	double NeuralNetwork::sigmoid(double value)
+	{
+		return (1.0 / (1.0 + std::exp(-value)));
+	}
+
+	NeuralFeed NeuralNetwork::update(NeuralFeed input) const
 	{
 		if (input.size() != this->_layers[0]->getInputNumber())
 			throw "ERROR PA KOOL";
@@ -89,14 +110,8 @@ namespace nn
 					activation += input[k] * currentNeuron.getWeight(k);
 				}
 				
-				activation += currentNeuron.getThreshold() * BIAS;
-				output.push_back(Sigmoid(activation));
-				
-				/* output[j] = std::pair<bool, double>(activation >= currentNeuron.getThreshold(), std::max<double>(0, (activation - currentNeuron.getThreshold()) / (1 - currentNeuron.getThreshold())));*/
-				
-//				activation 																=> activation
-//				activation / threshold												=> pourcentage d'activation
-//				max(0, (activation - threshold) / (1 - threshold))	=> pourcentage d'activation manquant
+				activation += currentNeuron.getBias();
+				output.push_back(sigmoid(activation));
 			}
 			
 			input = output;
@@ -203,18 +218,18 @@ namespace nn
 		{
 			this->_weights[i] = uniform_dist(e1);
 		}
-		this->_threshold = uniform_dist(e1);
+		this->_bias = uniform_dist(e1);
 	}
 	
 	Neuron::~Neuron()
 	{ }
 	
 	Neuron::Neuron(const Neuron& other)
-		: _weights(other._weights), _threshold(other._threshold)
+		: _weights(other._weights), _bias(other._bias)
 	{}
 
 	Neuron::Neuron(const Neuron&& other)
-		: _weights(other._weights), _threshold(other._threshold)
+		: _weights(other._weights), _bias(other._bias)
 	{}
 
 	Neuron&	Neuron::operator=(const Neuron& other)
@@ -222,7 +237,7 @@ namespace nn
 		if (this != &other)
 		{
 			this->_weights = other._weights;
-			this->_threshold = other._threshold;
+			this->_bias = other._bias;
 		}
 		return *this;
 	}
@@ -240,14 +255,26 @@ namespace nn
 			throw 42; // TODO True exception
 		return this->_weights[idx];
 	}
-	
-	double Neuron::getThreshold() const
+
+	void Neuron::setWeight(unsigned int idx, double value)
 	{
-		return this->_threshold;
+		if (idx >= this->_weights.size())
+			throw 42; // TODO True exception
+		this->_weights[idx] = value;
+	}
+
+	size_t Neuron::size() const
+	{
+		return this->_weights.size();
 	}
 	
-	void Neuron::setThreshold(double value)
+	double Neuron::getBias() const
 	{
-		this->_threshold = value;
+		return this->_bias;
+	}
+	
+	void Neuron::setBias(double value)
+	{
+		this->_bias = value;
 	}
 }
