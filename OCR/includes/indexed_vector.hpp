@@ -1,7 +1,7 @@
 #ifndef INDEXED_VECTOR_HPP
 #define	INDEXED_VECTOR_HPP
 
-#include	<allocators>
+#include	<memory>
 #include	<vector>
 
 template<unsigned int Idx, typename T, typename Allocator = std::allocator<T> >
@@ -15,11 +15,11 @@ public:
 		: base(alloc)
 	{ }
 
-	indexed_vector(size_type count, const T& value, const Allocator& alloc = Allocator())
+	indexed_vector(typename base::size_type count, const T& value, const Allocator& alloc = Allocator())
 		: base(count, value, alloc)
 	{ }
 
-	explicit indexed_vector(size_type count)
+	explicit indexed_vector(typename base::size_type count)
 		: base(count)
 	{ }
 
@@ -80,22 +80,22 @@ public:
 	~indexed_vector()
 	{ }
 
-	reference at(size_type pos)
+	typename base::reference at(typename base::size_type pos)
 	{
 		return this->base::at(pos - Idx);
 	}
 
-	const_reference at(size_type pos) const
+	typename base::const_reference at(typename base::size_type pos) const
 	{
 		return this->base::at(pos - Idx);
 	}
 
-	reference operator[](size_type pos)
+	typename base::reference operator[](typename base::size_type pos)
 	{
 		return this->base::operator[](pos - Idx);
 	}
 
-	const_reference operator[](size_type pos) const
+	typename base::const_reference operator[](typename base::size_type pos) const
 	{
 		return this->base::operator[](pos - Idx);
 	}
