@@ -12,57 +12,57 @@ private:
 
 public:
 	explicit indexed_vector(const Allocator& alloc = Allocator())
-			: base(alloc)
+		: base(alloc)
 	{ }
 
 	indexed_vector(typename base::size_type count, const T& value, const Allocator& alloc = Allocator())
-			: base(count, value, alloc)
+		: base(count, value, alloc)
 	{ }
 
 	explicit indexed_vector(typename base::size_type count)
-			: base(count)
+		: base(count)
 	{ }
 
 	template<class InputIt>
 	indexed_vector(InputIt first, InputIt last, const Allocator& alloc = Allocator())
-			: base(first, last, alloc)
+		: base(first, last, alloc)
 	{ }
 
 	indexed_vector(const indexed_vector& other)
-			: base(other)
+		: base(other)
 	{ }
 
 	indexed_vector(const base& other)
-			: base(other)
+		: base(other)
 	{ }
 
 	indexed_vector(const indexed_vector& other, const Allocator& alloc)
-			: base(other, alloc)
+		: base(other, alloc)
 	{ }
 
 	indexed_vector(const base& other, const Allocator& alloc)
-			: base(other, alloc)
+		: base(other, alloc)
 	{ }
 
 	indexed_vector(indexed_vector&& other)
-			: base(other)
+		: base(other)
 	{ }
 
 	indexed_vector(base&& other)
-			: base(other)
+		: base(other)
 	{ }
 
 	indexed_vector(indexed_vector&& other, const Allocator& alloc)
-			: base(other, alloc)
+		: base(other, alloc)
 	{ }
 
 	indexed_vector(base&& other, const Allocator& alloc)
-			: base(other, alloc)
+		: base(other, alloc)
 	{ }
 
 
 	indexed_vector(std::initializer_list<T> init, const Allocator& alloc = Allocator())
-			: base(init, alloc)
+		: base(init, alloc)
 	{ }
 
 	indexed_vector& operator=(const base& other)
