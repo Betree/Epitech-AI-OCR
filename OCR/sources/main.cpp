@@ -40,10 +40,12 @@ int main()
 	while (cin)
 	{
 		char cInput;
+		int value;
 
 		cout << "Feed value: ";
-		if (cin >> cInput)
+		if (cin >> value)
 		{
+			cInput = (char)value;
 			cin.clear();
 			cin.ignore((streamsize)numeric_limits<streamsize>::max, '\n');
 
