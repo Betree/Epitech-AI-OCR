@@ -17,4 +17,4 @@ set(SOURCE_FILES
 
 add_executable(OCR ${SOURCE_FILES})
 
-target_link_libraries( OCR ${OpenCV_LIBS} )
+target_link_libraries(OCR ${OpenCV_LIBS})
