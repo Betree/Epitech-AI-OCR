@@ -1,4 +1,6 @@
 #include <random>
+#include <fstream>
+#include <sstream>
 #include <algorithm>
 #include <cmath>
 #include "NeuralNetwork.hpp"
@@ -16,13 +18,14 @@ namespace nn
 		}
 		this->_layers.back() = new NeuronLayer(inputNumber, outputNumber);
 	}
+
+	NeuralNetwork::NeuralNetwork()
+	{
+	}
 	
 	NeuralNetwork::~NeuralNetwork()
 	{
-		for (unsigned int i = 0; i < this->_layers.size(); ++i)
-		{
-			delete this->_layers[i];
-		}
+		this->cleanup();
 	}
 	
 	NeuralNetwork::NeuralNetwork(const NeuralNetwork& other)
@@ -119,14 +122,94 @@ namespace nn
 		return output;
 	}
 	
-	void NeuralNetwork::save(const std::string& filename) const
+	bool NeuralNetwork::save(const std::string& filename) const
 	{
-		throw "TODO " + filename;
+		std::ofstream file(filename, std::ios_base::out | std::ios_base::trunc);
+
+		if (!!file)
+			for (size_t i = 0; i < this->_layers.size(); i++)
+			{
+				const NeuronLayer& layer(*this->_layers[i]);
+
+				file << layer.size() << ' ' << (layer.size() > 0 ? layer[0].size() : '0');
+
+				for (size_t j = 0; j < layer.size(); j++)
+				{
+					const Neuron& neuron(layer[j]);
+
+					file << ' ' << neuron.getBias();
+					for (size_t k = 0; k < neuron.size(); k++)
+					{
+						file << ' ' << neuron.getWeight(k);
+					}
+				}
+				file << std::endl;
+			}
+		if (!!file)
+			file.close();
+		return !!file;
 	}
 
-	void NeuralNetwork::load(const std::string& filename)
+	bool NeuralNetwork::load(const std::string& filename)
 	{
-		throw "TODO " + filename;
+		bool sent = true;
+		this->cleanup();
+		std::ifstream file(filename);
+		std::string line;
+
+		if (!file)
+			sent = false;
+		while (sent && std::getline(file, line))
+		{
+			std::istringstream stream(line);
+			unsigned int inputNumber;
+			unsigned int neuronNumber;
+
+			stream >> neuronNumber >> inputNumber;
+
+			if (!stream)
+				sent = false;
+			else
+			{
+				this->_layers.push_back(new NeuronLayer(inputNumber, neuronNumber));
+				NeuronLayer& layer(*this->_layers.back());
+
+				for (size_t i = 0; sent && i < neuronNumber; i++)
+				{
+					Neuron& neuron = layer[i];
+					double bias;
+					double weight;
+
+					if (!(stream >> bias))
+						sent = false;
+					else
+					{
+						neuron.setBias(bias);
+						for (size_t j = 0; sent && j < inputNumber; j++)
+						{
+							if (!(stream >> weight))
+								sent = false;
+							else
+							{
+								neuron.setWeight(j, weight);
+							}
+						}
+					}
+				}
+			}
+		}
+		if (!sent)
+			this->cleanup();
+		return sent;
+	}
+
+	void NeuralNetwork::cleanup()
+	{
+		for (unsigned int i = 0; i < this->_layers.size(); ++i)
+		{
+			delete this->_layers[i];
+		}
+		this->_layers.clear();
 	}
 	
 	// NeuronLayer

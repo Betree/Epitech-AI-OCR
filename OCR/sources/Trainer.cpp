@@ -66,7 +66,7 @@ namespace nn
 
 	static void backpropagation(NeuralNetwork& network, const std::vector<nn::Trainer::InputOutputPair>& batch)
 	{
-		const int L = network.size() + 1;
+		const unsigned int L = network.size() + 1;
 		std::vector<indexed_vector<1, indexed_vector<0, double> > > as(batch.size());
 		indexed_vector<2, indexed_vector<0, double>> z(L - 1);
 		std::vector<indexed_vector<2, indexed_vector<0, double> > > deltas(batch.size());

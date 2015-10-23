@@ -62,6 +62,7 @@ namespace nn
 	{
 		public:
 			NeuralNetwork(unsigned int inputNumber, unsigned int outputNumber, const std::vector<unsigned int>& hiddenLayersDefinition);
+			NeuralNetwork();
 			~NeuralNetwork();
 			NeuralNetwork(const NeuralNetwork& other);
 			NeuralNetwork(const NeuralNetwork&& other);
@@ -76,10 +77,12 @@ namespace nn
 
 			NeuralFeed update(NeuralFeed input) const;
 			
-			void save(const std::string& filename) const;
-			void load(const std::string& filename);
+			bool save(const std::string& filename) const;
+			bool load(const std::string& filename);
 			
 		private:
+			void cleanup();
+
 			std::vector<NeuronLayer*> _layers;
 	};
 }
