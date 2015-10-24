@@ -5,12 +5,28 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
 include_directories(includes)
 
+set(TRAINER_SOURCE_FILES
+        includes/NeuralNetwork.hpp
+        includes/indexed_vector.hpp
+        includes/Trainer.hpp
+        includes/ocr_utils.hpp
+	includes/dirent.h
+        sources/ocr_utils.cpp
+        sources/NeuralNetwork.cpp
+        sources/Trainer.cpp
+        sources/trainer_main.cpp)
+
+add_executable(ocr_trainer ${TRAINER_SOURCE_FILES})
+
 set(SOURCE_FILES
         includes/NeuralNetwork.hpp
         includes/indexed_vector.hpp
         includes/Trainer.hpp
+        includes/ocr_utils.hpp
+	includes/dirent.h
+        sources/ocr_utils.cpp
         sources/NeuralNetwork.cpp
         sources/Trainer.cpp
         sources/main.cpp)
 
-add_executable(OCR ${SOURCE_FILES})
+add_executable(ocr ${SOURCE_FILES})

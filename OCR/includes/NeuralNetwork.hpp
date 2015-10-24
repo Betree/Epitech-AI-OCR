@@ -62,11 +62,12 @@ namespace nn
 	{
 		public:
 			NeuralNetwork(unsigned int inputNumber, unsigned int outputNumber, const std::vector<unsigned int>& hiddenLayersDefinition);
+			NeuralNetwork(NeuralNetwork&& other);
 			NeuralNetwork();
 			~NeuralNetwork();
 			NeuralNetwork(const NeuralNetwork& other);
-			NeuralNetwork(const NeuralNetwork&& other);
 			NeuralNetwork& operator=(const NeuralNetwork& other);
+			NeuralNetwork& operator=(NeuralNetwork&& other);
 
 			NeuronLayer& operator[](unsigned int idx);
 			const NeuronLayer& operator[](unsigned int idx) const;

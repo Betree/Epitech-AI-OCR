@@ -37,13 +37,9 @@ namespace nn
 		}
 	}
 	
-	NeuralNetwork::NeuralNetwork(const NeuralNetwork&& other)
-	{
-		for (unsigned int i = 0; i < this->_layers.size(); ++i)
-		{
-			this->_layers[i] = new NeuronLayer(*(other._layers[i]));
-		}
-	}
+	NeuralNetwork::NeuralNetwork(NeuralNetwork&& other)
+		: _layers(std::move(other._layers))
+	{ }
 
 	NeuralNetwork& NeuralNetwork::operator=(const NeuralNetwork& other)
 	{
@@ -56,6 +52,13 @@ namespace nn
 				*(this->_layers[i]) = *(other._layers[i]);
 			}
 		}
+		return *this;
+	}
+
+	NeuralNetwork& NeuralNetwork::operator=(NeuralNetwork&& other)
+	{
+		this->cleanup();
+		this->_layers = std::move(other._layers);
 		return *this;
 	}
 
