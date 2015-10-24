@@ -32,6 +32,35 @@ int print_usage(const char* exeName)
 	return 1;
 }
 
+double distance(const NeuralNetwork& network, const string& dataset_folder)
+{
+	double distance = 0;
+	unsigned int inputCount = 0;
+
+	DIR* dir = opendir(dataset_folder.c_str());
+	struct dirent* ent;
+
+	while ((ent = readdir(dir)))
+	{
+		NeuralFeed expected(std::move(ocr::getExpectedOutput(ent->d_name)));
+
+		if (!expected.empty())
+		{
+			NeuralFeed output(std::move(network.update(std::move(ocr::getInput(dataset_folder, ent->d_name)))));
+
+			++inputCount;
+			double tmp = 0;
+			for (size_t i = 0; i < expected.size(); i++)
+				tmp += abs(expected[i] - output[i]);
+			distance += tmp / expected.size();
+		}
+	}
+	closedir(dir);
+	if (inputCount == 0)
+		++inputCount;
+	return distance / inputCount;
+}
+
 int ocr_training(const string& dataset_folder, unsigned int minibatch_size, const string& network_file, int ac, char** av)
 {
 	NeuralNetwork network;
@@ -46,13 +75,15 @@ int ocr_training(const string& dataset_folder, unsigned int minibatch_size, cons
 		return 2;
 	}
 
-	if (chdir(dataset_folder.c_str()))
+	cout << "[DEBUG] Distance before: " << distance(network, dataset_folder) << endl;
+
+	DIR* dir;
+	if (!(dir = opendir(dataset_folder.c_str())))
 	{
-		cerr << "Can not go to " << dataset_folder << ": " << strerror(errno) << endl;
-		return 4;
+		cerr << "Unable to open " << dataset_folder << ": " << strerror(errno) << endl;
+		return 3;
 	}
 
-	DIR* dir = opendir(".");
 	struct dirent* ent;
 
 	while ((ent = readdir(dir)))
@@ -61,7 +92,7 @@ int ocr_training(const string& dataset_folder, unsigned int minibatch_size, cons
 
 		if (!output.empty())
 		{
-			NeuralFeed input(std::move(ocr::getInput(ent->d_name)));
+			NeuralFeed input(std::move(ocr::getInput(dataset_folder, ent->d_name)));
 
 			trainer.feed(std::make_pair(input, output));
 		}
@@ -69,7 +100,10 @@ int ocr_training(const string& dataset_folder, unsigned int minibatch_size, cons
 	closedir(dir);
 
 	trainer.flush();
-	if (network.save(network_file))
+
+	cout << "[DEBUG] Distance after: " << distance(network, dataset_folder) << endl;
+
+	if (!network.save(network_file))
 	{
 		cerr << "Unable to save network to " << network_file << endl;
 		return 3;

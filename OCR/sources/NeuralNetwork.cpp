@@ -128,8 +128,9 @@ namespace nn
 	bool NeuralNetwork::save(const std::string& filename) const
 	{
 		std::ofstream file(filename, std::ios_base::out | std::ios_base::trunc);
+		bool sent;
 
-		if (!!file)
+		if ((sent = !!file))
 			for (size_t i = 0; i < this->_layers.size(); i++)
 			{
 				const NeuronLayer& layer(*this->_layers[i]);
@@ -148,9 +149,9 @@ namespace nn
 				}
 				file << std::endl;
 			}
-		if (!!file)
+		if (!sent)
 			file.close();
-		return !!file;
+		return sent;
 	}
 
 	bool NeuralNetwork::load(const std::string& filename)
