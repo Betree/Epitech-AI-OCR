@@ -13,7 +13,7 @@ set(SOURCE_FILES
         includes/Trainer.hpp
         sources/NeuralNetwork.cpp
         sources/Trainer.cpp
-        sources/main.cpp)
+        sources/main.cpp sources/ImagesLoader.cpp includes/ImagesLoader.h sources/ImageProcessor.cpp includes/ImageProcessor.h)
 
 add_executable(OCR ${SOURCE_FILES})
 
