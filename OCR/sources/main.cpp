@@ -13,8 +13,10 @@ int main(int argc, char** argv)
 	{
 		// Clean image
 		processor.clean(image);
+		processor.getHorizontalDensityCurve(image, 8);
+		processor.getVerticalDensityCurve(image, 8);
 
-		// Temp : Aff image
+		// Temp : Aff image and returns
 		namedWindow("Display Image", WINDOW_AUTOSIZE);
 		imshow("Display Image", image);
 		waitKey(0);
