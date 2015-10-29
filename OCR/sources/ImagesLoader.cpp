@@ -45,6 +45,7 @@ bool ImagesLoader::getNextImage(Mat& image) {
     {
         std::string filename = _images.back();
         _images.pop_back();
+        std::cout << "Treat image " << filename << std::endl;
         image = imread(filename, 1);
         return true;
     }

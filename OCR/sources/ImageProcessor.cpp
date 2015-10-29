@@ -10,87 +10,57 @@ ImageProcessor::ImageProcessor(void) {
 }
 
 void ImageProcessor::clean(Mat& image) {
+    // Concert to greyscale
+    cv::cvtColor(image, image, cv::COLOR_BGR2GRAY);
+
+    // Cropping
     CroppingProfile profile;
     getCroppingProfile(image, profile);
     std::cout << "[Crop] Left:" << profile.left << "px Top:" << profile.top << "px Right:" << profile.right << "px Bottom:" << profile.bottom << "px" << std::endl;
-    cv::Rect myRect(profile.left, profile.top, image.size().width - profile.right - profile.left, image.size().height - profile.top - profile.bottom);
+    cv::Rect myRect(profile.left, profile.top, image.cols - profile.right - profile.left, image.rows - profile.top - profile.bottom);
     image = image(myRect);
+}
+
+int ImageProcessor::getCroppingHorizontal(const Mat& image, int xStart, int yStart, int xEnd, int yEnd) const
+{
+    int xIncr = xStart < xEnd ? 1 : -1;
+    int yIncr = yStart < yEnd ? 1 : -1;
+
+    for (int x = xStart; x != xEnd; x += xIncr)
+    {
+        for (int y = yStart; y != yEnd; y += yIncr) {
+            if (image.at<unsigned char>(y, x) != 255) {
+                return abs(xStart - x);
+            }
+        }
+    }
+    //TODO: throw exception : blank image
+    return 0;
+}
+
+int ImageProcessor::getCroppingVertical(const Mat& image, int xStart, int yStart, int xEnd, int yEnd) const
+{
+    int xIncr = xStart < xEnd ? 1 : -1;
+    int yIncr = yStart < yEnd ? 1 : -1;
+
+    for (int y = yStart; y != yEnd; y += yIncr) {
+        for (int x = xStart; x != xEnd; x += xIncr)
+        {
+            if (image.at<unsigned char>(y, x) != 255) {
+                return abs(yStart - y);
+            }
+        }
+    }
+    //TODO: throw exception : blank image
+    return 0;
 }
 
 void ImageProcessor::getCroppingProfile(const Mat &image, ImageProcessor::CroppingProfile &crop) const
 {
     bool mustBreak;
 
-    // Croping left
-    mustBreak = false;
-    for (int x = 0; x < image.size().width; ++x)
-    {
-        for (int y = 0; y < image.size().height; ++y) {
-            if (isWhite(image, image.at<Vec3b>(x, y))) {
-                mustBreak = true;
-                break;
-            }
-        }
-        if (mustBreak) {
-            crop.left = x;
-            break;
-        }
-    }
-
-    // Croping right
-    mustBreak = false;
-    for (int x = image.size().width; x > 0; --x)
-    {
-        for (int y = 0; y < image.size().height; ++y) {
-            if (isWhite(image, image.at<Vec3b>(x, y))) {
-                mustBreak = true;
-                break;
-            }
-        }
-        if (mustBreak) {
-            crop.right = image.size().width - x;
-            break;
-        }
-    }
-
-    // Croping top
-    mustBreak = false;
-    for (int y = 0; y < image.size().height; ++y)
-    {
-        for (int x = 0; x < image.size().width; ++x) {
-            if (isWhite(image, image.at<Vec3b>(x, y))) {
-                mustBreak = true;
-                break;
-            }
-        }
-        if (mustBreak) {
-            crop.top = y;
-            break;
-        }
-    }
-
-    // Croping bottom
-    mustBreak = false;
-    for (int y = image.size().height; y > 0; --y)
-    {
-        for (int x = 0; x < image.size().width; ++x) {
-            if (isWhite(image, image.at<Vec3b>(x, y))) {
-                mustBreak = true;
-                break;
-            }
-        }
-        if (mustBreak) {
-            crop.bottom = image.size().height - y;
-            break;
-        }
-    }
-}
-
-bool ImageProcessor::isWhite(const Mat& image, const Vec3b &pixel) const {
-    for(int k = 0; k < image.channels(); k++) {
-        uchar col = pixel.val[k];
-        if (col == 255)
-            return false;
-    }
-    return true;
+    crop.left = getCroppingHorizontal(image, 0, 0, image.cols, image.rows);
+    crop.right = getCroppingHorizontal(image, image.cols - 1, 0, -1, image.rows);
+    crop.top = getCroppingVertical(image, 0, 0, image.cols, image.rows);
+    crop.bottom = getCroppingVertical(image, 0, image.rows - 1, image.cols, -1);
 }

@@ -18,7 +18,8 @@ public:
     ImageProcessor(void);
     void clean(Mat& image);
     void getCroppingProfile(const Mat& image, CroppingProfile& profile) const;
-    bool isWhite(const Mat& image, const Vec3b& pixel) const;
+    int getCroppingHorizontal(const Mat& image, int xStart, int yStart, int xEnd, int yEnd) const;
+    int getCroppingVertical(const Mat& image, int xStart, int yStart, int xEnd, int yEnd) const;
 };
 
 

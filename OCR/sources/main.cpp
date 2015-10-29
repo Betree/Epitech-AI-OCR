@@ -25,7 +25,7 @@ int main(int argc, char** argv)
 	imshow("Display Image", image);
 	waitKey(0);
 */
-	ImagesLoader loader("data/55x_small_dataset/55x_small_dataset");
+	ImagesLoader loader("/home/piouffb/workspace/EPITECH/Epitech-AI-OCR/OCR/data/55x_small_dataset/55x_small_dataset");
 	ImageProcessor processor;
 	Mat image;
 	while (loader.getNextImage(image))
