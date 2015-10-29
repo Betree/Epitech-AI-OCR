@@ -17,6 +17,7 @@ public:
 public:
     ImageProcessor(void);
     void clean(Mat& image);
+private:
     void getCroppingProfile(const Mat& image, CroppingProfile& profile) const;
     int getCroppingHorizontal(const Mat& image, int xStart, int yStart, int xEnd, int yEnd) const;
     int getCroppingVertical(const Mat& image, int xStart, int yStart, int xEnd, int yEnd) const;
