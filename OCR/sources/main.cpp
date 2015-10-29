@@ -1,4 +1,3 @@
-#include <stdio.h>
 #include <opencv2/opencv.hpp>
 #include "ImagesLoader.h"
 #include "ImageProcessor.h"
