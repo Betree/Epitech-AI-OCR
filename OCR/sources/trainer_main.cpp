@@ -2,6 +2,7 @@
 #include <iostream>
 #include <cmath>
 #include <string>
+#include <algorithm>
 
 #ifdef WIN32
 # include <direct.h>
@@ -32,30 +33,22 @@ int print_usage(const char* exeName)
 	return 1;
 }
 
-double distance(const NeuralNetwork& network, const string& dataset_folder)
+double distance(const NeuralNetwork& network, const Trainer::Epoch& epoch)
 {
 	double distance = 0;
-	unsigned int inputCount = 0;
+	size_t inputCount = 0;
 
-	DIR* dir = opendir(dataset_folder.c_str());
-	struct dirent* ent;
-
-	while ((ent = readdir(dir)))
+	for (; inputCount < epoch.size(); ++inputCount)
 	{
-		NeuralFeed expected(std::move(ocr::getExpectedOutput(ent->d_name)));
+		NeuralFeed output(std::move(network.update(epoch[inputCount].first)));
+		const NeuralFeed& expected(epoch[inputCount].second);
 
-		if (!expected.empty())
-		{
-			NeuralFeed output(std::move(network.update(std::move(ocr::getInput(dataset_folder, ent->d_name)))));
-
-			++inputCount;
-			double tmp = 0;
-			for (size_t i = 0; i < expected.size(); i++)
-				tmp += abs(expected[i] - output[i]);
-			distance += tmp / expected.size();
-		}
+		double tmp = 0;
+		for (size_t i = 0; i < epoch[i].second.size(); i++)
+			tmp += abs(expected[i] - output[i]);
+		distance += tmp / expected.size();
 	}
-	closedir(dir);
+
 	if (inputCount == 0)
 		++inputCount;
 	return distance / inputCount;
@@ -75,7 +68,6 @@ int ocr_training(const string& dataset_folder, unsigned int minibatch_size, cons
 		return 2;
 	}
 
-	cout << "[DEBUG] Distance before: " << distance(network, dataset_folder) << endl;
 
 	DIR* dir;
 	if (!(dir = opendir(dataset_folder.c_str())))
@@ -84,6 +76,7 @@ int ocr_training(const string& dataset_folder, unsigned int minibatch_size, cons
 		return 3;
 	}
 
+	Trainer::Epoch epoch;
 	struct dirent* ent;
 
 	while ((ent = readdir(dir)))
@@ -94,20 +87,27 @@ int ocr_training(const string& dataset_folder, unsigned int minibatch_size, cons
 		{
 			NeuralFeed input(std::move(ocr::getInput(dataset_folder, ent->d_name)));
 
-			trainer.feed(std::make_pair(input, output));
+			epoch.push_back(Trainer::InputOutputPair(input, output));
 		}
 	}
+
 	closedir(dir);
 
-	trainer.flush();
+	cout << "[DEBUG] Distance before: " << distance(network, epoch) << endl;
 
-	cout << "[DEBUG] Distance after: " << distance(network, dataset_folder) << endl;
+	random_shuffle(epoch.begin(), epoch.end());
+
+	trainer.train(epoch);
+
+	cout << "[DEBUG] Distance after: " << distance(network, epoch) << endl;
 
 	if (!network.save(network_file))
 	{
 		cerr << "Unable to save network to " << network_file << endl;
 		return 3;
 	}
+	cout << "Press return to exit" << endl;
+	cin.get();
 	return 0;
 }
 

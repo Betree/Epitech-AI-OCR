@@ -42,7 +42,7 @@ namespace nn
 		this->_miniBatchSize = value;
 	}
 
-	void Trainer::train(const std::vector<InputOutputPair>& in)
+	void Trainer::train(const Trainer::Epoch& in)
 	{
 		std::vector<InputOutputPair> epoch(in);
 

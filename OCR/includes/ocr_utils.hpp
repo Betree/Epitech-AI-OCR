@@ -2,7 +2,10 @@
 
 #include "NeuralNetwork.hpp"
 
-#define OCR_INPUT_NUMBER 256 // Debug
+#define VERTICAL_DENSITY_POINTS 10
+#define HORIZONTAL_DENSITY_POINTS 10
+
+#define OCR_INPUT_NUMBER VERTICAL_DENSITY_POINTS + HORIZONTAL_DENSITY_POINTS
 #define OCR_OUTPUT_NUMBER 256 // Debug
 
 namespace ocr

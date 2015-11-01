@@ -10,6 +10,7 @@ namespace nn
 	{
 	public:
 		typedef std::pair<NeuralFeed, NeuralFeed> InputOutputPair;
+		typedef std::vector<InputOutputPair> Epoch;
 
 		Trainer(NeuralNetwork* network);
 		~Trainer();
@@ -19,7 +20,7 @@ namespace nn
 		unsigned int getMiniBatchSize() const;
 		void setMiniBatchSize(unsigned int value);
 
-		void train(const std::vector<InputOutputPair>& epoch);
+		void train(const Epoch& epoch);
 
 		void feed(const InputOutputPair& input);
 		void flush();

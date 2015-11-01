@@ -24,6 +24,7 @@ set(TRAINER_SOURCE_FILES
         sources/trainer_main.cpp)
 
 add_executable(ocr_trainer ${TRAINER_SOURCE_FILES})
+target_link_libraries(ocr_trainer ${OpenCV_LIBS})
 
 set(SOURCE_FILES
         includes/NeuralNetwork.hpp

@@ -18,7 +18,7 @@ void ImageProcessor::clean(Mat& image) {
     // Cropping
     CroppingProfile profile;
     getCroppingProfile(image, profile);
-    std::cout << "[Crop] Left:" << profile.left << "px Top:" << profile.top << "px Right:" << profile.right << "px Bottom:" << profile.bottom << "px" << std::endl;
+    //std::cout << "[Crop] Left:" << profile.left << "px Top:" << profile.top << "px Right:" << profile.right << "px Bottom:" << profile.bottom << "px" << std::endl;
     cv::Rect myRect(profile.left, profile.top, image.cols - profile.right - profile.left, image.rows - profile.top - profile.bottom);
     image = image(myRect);
 }
@@ -69,7 +69,7 @@ std::vector<double> ImageProcessor::getHorizontalDensityCurve(Mat& image, int nb
     std::vector<double> weightCurve;
     weightCurve.reserve(nbPoints);
 
-    int storeThreshold = (int) ceil((double)image.rows / nbPoints);
+    int storeThreshold = (int) ceil((double)image.rows / (double)nbPoints);
     double densityBuffer = 0.0;
     int nbRowsAnalysed = 0;
     for (int y = 0; y != image.rows; ++y) {
@@ -80,7 +80,7 @@ std::vector<double> ImageProcessor::getHorizontalDensityCurve(Mat& image, int nb
         nbRowsAnalysed += 1;
 
         // If average current lines densities must be stored in vector
-        if (y && y % storeThreshold == 0)
+        if (y > 0 && y % storeThreshold == 0)
         {
             weightCurve.push_back(densityBuffer / nbRowsAnalysed);
             nbRowsAnalysed = 0;
@@ -89,7 +89,7 @@ std::vector<double> ImageProcessor::getHorizontalDensityCurve(Mat& image, int nb
     }
 
     // Append data to vector if there's still some left
-    if (densityBuffer)
+    if (nbRowsAnalysed > 0)
         weightCurve.push_back(densityBuffer / nbRowsAnalysed);
     return weightCurve;
 }
@@ -98,7 +98,7 @@ std::vector<double> ImageProcessor::getVerticalDensityCurve(Mat& image, int nbPo
     std::vector<double> weightCurve;
     weightCurve.reserve(nbPoints);
 
-    int storeThreshold = (int) ceil((double)image.cols / nbPoints);
+    int storeThreshold = (int) ceil((double)image.cols / (double)nbPoints);
     double densityBuffer = 0.0;
     int nbColsAnalysed = 0;
     for (int x = 0; x != image.cols; ++x) {
@@ -109,7 +109,7 @@ std::vector<double> ImageProcessor::getVerticalDensityCurve(Mat& image, int nbPo
         nbColsAnalysed += 1;
 
         // If average current lines densities must be stored in vector
-        if (x && x % storeThreshold == 0)
+        if (x > 0 && x % storeThreshold == 0)
         {
             weightCurve.push_back(densityBuffer / nbColsAnalysed);
             nbColsAnalysed = 0;
@@ -118,7 +118,7 @@ std::vector<double> ImageProcessor::getVerticalDensityCurve(Mat& image, int nbPo
     }
 
     // Append data to vector if there's still some left
-    if (densityBuffer)
+    if (nbColsAnalysed > 0)
         weightCurve.push_back(densityBuffer / nbColsAnalysed);
     return weightCurve;
 }

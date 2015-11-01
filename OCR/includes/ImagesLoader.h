@@ -13,9 +13,9 @@ using namespace cv;
 class ImagesLoader {
 public:
     ImagesLoader(const std::string &directoryPath);
-
     ~ImagesLoader();
 
+	static Mat openImage(const std::string& directory, const std::string& filename);
     bool getNextImage(Mat& image);
 
 private:

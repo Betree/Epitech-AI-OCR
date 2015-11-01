@@ -8,7 +8,7 @@
 #include <dirent.h>
 #include "ImagesLoader.h"
 
-inline char separator()
+static inline char separator()
 {
 #ifdef _WIN32
     return '\\';
@@ -38,6 +38,11 @@ ImagesLoader::ImagesLoader(const std::string& directoryPath) {
 
 
 ImagesLoader::~ImagesLoader() {
+}
+
+Mat ImagesLoader::openImage(const std::string & directory, const std::string & filename)
+{
+	return imread(directory + separator() + filename);
 }
 
 bool ImagesLoader::getNextImage(Mat& image) {

@@ -1,6 +1,8 @@
 #include <list>
 #include <sstream>
 #include "ocr_utils.hpp"
+#include "ImageProcessor.h"
+#include "ImagesLoader.h"
 
 using namespace std;
 using namespace nn;
@@ -23,28 +25,33 @@ NeuralNetwork ocr::fromArgv(unsigned int ac, char** argv)
 
 NeuralFeed ocr::getInput(const std::string& folder, const std::string& fileName)
 {
-	// Debug
-	// return ocr::getExpectedOutput(fileName);
+	Mat img = ImagesLoader::openImage(folder, fileName);
+	ImageProcessor processor;
 
-	throw "Not implemented";
+//	processor.clean(img);
+	std::vector<double> hdc = std::move(processor.getHorizontalDensityCurve(img, HORIZONTAL_DENSITY_POINTS));
+	std::vector<double> vdc = std::move(processor.getVerticalDensityCurve(img, VERTICAL_DENSITY_POINTS));
+
+	NeuralFeed sent;
+
+	sent.insert(sent.end(), hdc.begin(), hdc.end());
+	sent.insert(sent.end(), vdc.begin(), vdc.end());
+	return sent;
 }
 
 char ocr::getCharFromOutput(const NeuralFeed& output)
 {
-	// Debug
-	//unsigned int idxMax = 0;
-	//double value = 0;
-	//for (size_t i = 0; i < output.size(); i++)
-	//{
-	//	if (output[i] > value)
-	//	{
-	//		idxMax = i;
-	//		value = output[i];
-	//	}
-	//}
-	//return (char)idxMax;
-
-	throw "Not implemented";
+	unsigned int idxMax = 0;
+	double value = 0;
+	for (size_t i = 0; i < output.size(); i++)
+	{
+		if (output[i] > value)
+		{
+			idxMax = i;
+			value = output[i];
+		}
+	}
+	return (char)idxMax;
 }
 
 NeuralFeed ocr::getExpectedOutput(const std::string& fileName)	
@@ -54,12 +61,9 @@ NeuralFeed ocr::getExpectedOutput(const std::string& fileName)
 	if (expected == 0)
 		return NeuralFeed();
 
-	// Debug
-	//NeuralFeed sent(256);
-	//sent[expected] = 1;
-	//return sent;
-
-	throw "Not implemented";
+	NeuralFeed sent(256);
+	sent[expected] = 1;
+	return sent;
 }
 
 char ocr::getExpectedChar(const std::string& fileName)

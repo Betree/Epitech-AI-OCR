@@ -1,7 +1,6 @@
 #include <opencv2/opencv.hpp>
 #include "NeuralNetwork.hpp"
-#include "ImagesLoader.h"
-#include "ImageProcessor.h"
+#include "ocr_utils.hpp"
 
 using namespace nn;
 using namespace std;
@@ -9,27 +8,25 @@ using namespace cv;
 
 int main(int argc, char** argv)
 {
-	if (argc != 2)
+	if (argc != 4)
 	{
-		cout << "Usage: " << argv[0] << " dataset_folder" << endl;
+		cout << "Usage: " << argv[0] << " folder file network_file" << endl;
 		return 1;
 	}
 	
-	ImagesLoader loader(argv[1]);
-	ImageProcessor processor;
-	Mat image;
-	while (loader.getNextImage(image))
-	{
-		// Clean image
-		processor.clean(image);
-		processor.getHorizontalDensityCurve(image, 8);
-		processor.getVerticalDensityCurve(image, 8);
+	NeuralNetwork network;
 
-		// Temp : Aff image and returns
-		namedWindow("Display Image", WINDOW_AUTOSIZE);
-		imshow("Display Image", image);
-		waitKey(0);
-		return 0;
+	if (!network.load(argv[3]))
+	{
+		cerr << "Unable to load network file: " << argv[3] << endl;
+		return 1;
 	}
+
+	NeuralFeed input(std::move(ocr::getInput(argv[1], argv[2])));
+	NeuralFeed output(std::move(network.update(input)));
+
+	cout << "I think this is a: " << ocr::getCharFromOutput(output) << endl;
+
+	cin.get();
 	return 0;
 }
