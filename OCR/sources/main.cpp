@@ -1,4 +1,5 @@
 #include <opencv2/opencv.hpp>
+#include "NeuralNetwork.hpp"
 #include "ImagesLoader.h"
 #include "ImageProcessor.h"
 
@@ -8,7 +9,13 @@ using namespace cv;
 
 int main(int argc, char** argv)
 {
-	ImagesLoader loader("/home/piouffb/workspace/EPITECH/Epitech-AI-OCR/OCR/data/55x_small_dataset/55x_small_dataset");
+	if (argc != 2)
+	{
+		cout << "Usage: " << argv[0] << " dataset_folder" << endl;
+		return 1;
+	}
+	
+	ImagesLoader loader(argv[1]);
 	ImageProcessor processor;
 	Mat image;
 	while (loader.getNextImage(image))

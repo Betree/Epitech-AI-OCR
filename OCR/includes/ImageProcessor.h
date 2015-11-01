@@ -5,6 +5,8 @@
 #ifndef OCR_IMAGEPROCESSOR_H
 #define OCR_IMAGEPROCESSOR_H
 
+#include <opencv2/opencv.hpp>
+
 using namespace cv;
 
 class ImageProcessor {

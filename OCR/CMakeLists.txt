@@ -6,13 +6,18 @@ find_package( OpenCV REQUIRED )
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
 include_directories(includes)
+include_directories(${OpenCV_INCLUDE_DIRS})
 
 set(TRAINER_SOURCE_FILES
         includes/NeuralNetwork.hpp
         includes/indexed_vector.hpp
         includes/Trainer.hpp
         includes/ocr_utils.hpp
-	includes/dirent.h
+		includes/dirent.h
+		includes/ImageProcessor.h
+		includes/ImagesLoader.h
+		sources/ImageProcessor.cpp
+		sources/ImagesLoader.cpp
         sources/ocr_utils.cpp
         sources/NeuralNetwork.cpp
         sources/Trainer.cpp
@@ -25,11 +30,15 @@ set(SOURCE_FILES
         includes/indexed_vector.hpp
         includes/Trainer.hpp
         includes/ocr_utils.hpp
-	includes/dirent.h
+		includes/dirent.h
+		includes/ImageProcessor.h
+		includes/ImagesLoader.h
+		sources/ImageProcessor.cpp
+		sources/ImagesLoader.cpp
         sources/ocr_utils.cpp
         sources/NeuralNetwork.cpp
         sources/Trainer.cpp
-        sources/main.cpp sources/ImagesLoader.cpp includes/ImagesLoader.h sources/ImageProcessor.cpp includes/ImageProcessor.h)
+        sources/main.cpp)
 
 add_executable(ocr ${SOURCE_FILES})
-target_link_libraries(OCR ${OpenCV_LIBS})
+target_link_libraries(ocr ${OpenCV_LIBS})
