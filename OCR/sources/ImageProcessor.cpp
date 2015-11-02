@@ -10,7 +10,6 @@ ImageProcessor::ImageProcessor(void) {
 }
 
 void ImageProcessor::clean(Mat& image) {
-    //TODO: Detect empty + too small images
     // Concert to greyscale if necessary
     if (image.channels() > 1)
         cv::cvtColor(image, image, cv::COLOR_BGR2GRAY);
@@ -18,7 +17,6 @@ void ImageProcessor::clean(Mat& image) {
     // Cropping
     CroppingProfile profile;
     getCroppingProfile(image, profile);
-    //std::cout << "[Crop] Left:" << profile.left << "px Top:" << profile.top << "px Right:" << profile.right << "px Bottom:" << profile.bottom << "px" << std::endl;
     cv::Rect myRect(profile.left, profile.top, image.cols - profile.right - profile.left, image.rows - profile.top - profile.bottom);
     image = image(myRect);
 }
@@ -69,9 +67,11 @@ std::vector<double> ImageProcessor::getHorizontalDensityCurve(Mat& image, int nb
     std::vector<double> weightCurve;
     weightCurve.reserve(nbPoints);
 
-    int storeThreshold = (int) ceil((double)image.rows / (double)nbPoints);
+    double storeThreshold = (double)image.rows / (double)nbPoints;
+    double currentThreshold = storeThreshold;
     double densityBuffer = 0.0;
     int nbRowsAnalysed = 0;
+    int lastRowStored = 0;
     for (int y = 0; y != image.rows; ++y) {
         int rowTotalPixelsDensity = 0;
         for (int x = 0; x != image.cols; ++x)
@@ -80,17 +80,24 @@ std::vector<double> ImageProcessor::getHorizontalDensityCurve(Mat& image, int nb
         nbRowsAnalysed += 1;
 
         // If average current lines densities must be stored in vector
-        if (y > 0 && y % storeThreshold == 0)
+        if ((double)nbRowsAnalysed >= currentThreshold)
         {
-            weightCurve.push_back(densityBuffer / nbRowsAnalysed);
-            nbRowsAnalysed = 0;
+            weightCurve.push_back(densityBuffer / (nbRowsAnalysed - lastRowStored));
             densityBuffer = 0.0;
+            currentThreshold += storeThreshold;
+            lastRowStored = nbRowsAnalysed;
         }
     }
 
-    // Append data to vector if there's still some left
-    if (nbRowsAnalysed > 0)
-        weightCurve.push_back(densityBuffer / nbRowsAnalysed);
+    // Check everything's fine
+    if (lastRowStored != nbRowsAnalysed)
+        weightCurve.push_back(densityBuffer / (nbRowsAnalysed - lastRowStored));
+    else if (weightCurve.size() != nbPoints)
+        throw new std::runtime_error("Error: TOO MUCH DATA");
+
+    // Complete data with blank, useful when picture is smaller than nbPoints
+    if (weightCurve.size() < nbPoints)
+        completeCurveWithBlank(weightCurve, nbPoints);
     return weightCurve;
 }
 
@@ -98,9 +105,11 @@ std::vector<double> ImageProcessor::getVerticalDensityCurve(Mat& image, int nbPo
     std::vector<double> weightCurve;
     weightCurve.reserve(nbPoints);
 
-    int storeThreshold = (int) ceil((double)image.cols / (double)nbPoints);
+    double storeThreshold = (double)image.cols / (double)nbPoints;
+    double currentThreshold = storeThreshold;
     double densityBuffer = 0.0;
     int nbColsAnalysed = 0;
+    int lastColStored = 0;
     for (int x = 0; x != image.cols; ++x) {
         int colTotalPixelsDensity = 0;
         for (int y = 0; y != image.rows; ++y)
@@ -109,16 +118,37 @@ std::vector<double> ImageProcessor::getVerticalDensityCurve(Mat& image, int nbPo
         nbColsAnalysed += 1;
 
         // If average current lines densities must be stored in vector
-        if (x > 0 && x % storeThreshold == 0)
+        if ((double)nbColsAnalysed >= currentThreshold)
         {
-            weightCurve.push_back(densityBuffer / nbColsAnalysed);
-            nbColsAnalysed = 0;
+            weightCurve.push_back(densityBuffer / (nbColsAnalysed - lastColStored));
             densityBuffer = 0.0;
+            currentThreshold += storeThreshold;
+            lastColStored = nbColsAnalysed;
         }
     }
 
-    // Append data to vector if there's still some left
-    if (nbColsAnalysed > 0)
-        weightCurve.push_back(densityBuffer / nbColsAnalysed);
+    // Check everything's fine
+    if (lastColStored != nbColsAnalysed)
+        weightCurve.push_back(densityBuffer / (nbColsAnalysed - lastColStored));
+    else if (weightCurve.size() > nbPoints)
+        throw new std::runtime_error("Error: too much data");
+
+    // Complete data with blank, useful when picture is smaller than nbPoints
+    if (weightCurve.size() < nbPoints)
+        completeCurveWithBlank(weightCurve, nbPoints);
     return weightCurve;
+}
+
+void ImageProcessor::completeCurveWithBlank(std::vector<double>& curve, int nbPoints) const
+{
+    bool appendLeft = false;
+
+    while (curve.size() < nbPoints)
+    {
+        if (appendLeft)
+            curve.insert(curve.begin(), 0.0);
+        else
+            curve.push_back(0.0);
+        appendLeft = !appendLeft;
+    }
 }

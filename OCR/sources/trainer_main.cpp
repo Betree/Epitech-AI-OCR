@@ -1,7 +1,7 @@
 #include <sstream>
 #include <iostream>
 #include <cmath>
-#include <string>
+#include <string.h>
 #include <algorithm>
 
 #ifdef WIN32
@@ -23,7 +23,11 @@ char* _strerror(int err)
 {
 	static char buffer[256];
 
-	strerror_s(buffer, err);
+	#ifdef WIN32
+		strerror_s(buffer, err);
+    #else
+		strerror_r(err, buffer, 256);
+    #endif
 	return buffer;
 }
 
@@ -81,13 +85,17 @@ int ocr_training(const string& dataset_folder, unsigned int minibatch_size, cons
 
 	while ((ent = readdir(dir)))
 	{
-		NeuralFeed output(std::move(ocr::getExpectedOutput(ent->d_name)));
+		string filename(ent->d_name);
 
-		if (!output.empty())
+		if (filename.length() >= 4 && !filename.compare(filename.length() - 4, 4, ".bmp"))
 		{
-			NeuralFeed input(std::move(ocr::getInput(dataset_folder, ent->d_name)));
+			NeuralFeed output(std::move(ocr::getExpectedOutput(filename)));
 
-			epoch.push_back(Trainer::InputOutputPair(input, output));
+			if (!output.empty()) {
+				NeuralFeed input(std::move(ocr::getInput(dataset_folder, filename)));
+
+				epoch.push_back(Trainer::InputOutputPair(input, output));
+			}
 		}
 	}
 

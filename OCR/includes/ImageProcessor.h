@@ -25,7 +25,7 @@ public:
  */
     /*
      * Get the horizontal density curve (the density for each rows)
-     * [!] Method behavior is undefined in case nbPoints is greater than image height
+     * Curve is filled with 0 density on each side to match nbPoints size if the image is too small
      *
      * returns a vector of nbPoints size filled with densities represented with double between 0.0 and 1.0
      */
@@ -33,7 +33,7 @@ public:
 
     /*
      * Get the horizontal density curve (the density for each columns)
-     * [!] Method behavior is undefined in case nbPoints is greater than image width
+     * Curve is filled with 0 density on each side to match nbPoints size if the image is too small
      *
      * returns a vector of nbPoints size filled with densities represented with double between 0.0 and 1.0
      */
@@ -46,6 +46,11 @@ private:
     void getCroppingProfile(const Mat& image, CroppingProfile& profile) const;
     int getCroppingHorizontal(const Mat& image, int xStart, int yStart, int xEnd, int yEnd) const;
     int getCroppingVertical(const Mat& image, int xStart, int yStart, int xEnd, int yEnd) const;
+
+    /*
+     * Density curves
+     */
+    void completeCurveWithBlank(std::vector<double>& curve, int nbPoints) const;
 };
 
 
