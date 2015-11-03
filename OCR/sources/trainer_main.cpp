@@ -2,7 +2,6 @@
 #include <iostream>
 #include <cmath>
 #include <string>
-#include <algorithm>
 
 #ifdef WIN32
 # include <direct.h>
@@ -44,7 +43,7 @@ double distance(const NeuralNetwork& network, const Trainer::Epoch& epoch)
 		const NeuralFeed& expected(epoch[inputCount].second);
 
 		double tmp = 0;
-		for (size_t i = 0; i < epoch[i].second.size(); i++)
+		for (size_t i = 0; i < expected.size(); i++)
 			tmp += abs(expected[i] - output[i]);
 		distance += tmp / expected.size();
 	}
@@ -93,21 +92,21 @@ int ocr_training(const string& dataset_folder, unsigned int minibatch_size, cons
 
 	closedir(dir);
 
-	cout << "[DEBUG] Distance before: " << distance(network, epoch) << endl;
+//	cout << "[DEBUG] Distance before: " << distance(network, epoch) << endl;
 
-	random_shuffle(epoch.begin(), epoch.end());
+	cout << "Training start." << endl;
 
 	trainer.train(epoch);
 
-	cout << "[DEBUG] Distance after: " << distance(network, epoch) << endl;
+	cout << "Training done." << endl;
+
+//	cout << "[DEBUG] Distance after: " << distance(network, epoch) << endl;
 
 	if (!network.save(network_file))
 	{
 		cerr << "Unable to save network to " << network_file << endl;
 		return 3;
 	}
-	cout << "Press return to exit" << endl;
-	cin.get();
 	return 0;
 }
 

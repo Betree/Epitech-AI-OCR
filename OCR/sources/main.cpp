@@ -25,8 +25,9 @@ int main(int argc, char** argv)
 	NeuralFeed input(std::move(ocr::getInput(argv[1], argv[2])));
 	NeuralFeed output(std::move(network.update(input)));
 
-	cout << "I think this is a: " << ocr::getCharFromOutput(output) << endl;
-
-	cin.get();
+	char guess = ocr::getCharFromOutput(output);
+	cout << "I think this is a: " << guess << " (" << (int)guess << ") with " << output[guess] * 100.0 << '%' << endl;
+	char expected = ocr::getExpectedChar(argv[2]);
+	cout << "Expected: " << expected << " (" << (int)expected << ") with " << output[expected] * 100.0 << '%' << endl;
 	return 0;
 }
