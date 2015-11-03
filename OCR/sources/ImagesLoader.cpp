@@ -22,10 +22,14 @@ ImagesLoader::ImagesLoader(const std::string& directoryPath) {
     struct dirent* dirEnt;
     if ((dir = opendir(directoryPath.c_str())) != NULL) {
         while ((dirEnt = readdir (dir)) != NULL) {
-            std::string imagePath(directoryPath);
-            imagePath += separator();
-            imagePath +=  dirEnt->d_name;
-            _images.push_back(imagePath);
+            std::string filename(dirEnt->d_name);
+
+            if (filename.length() >= 4 && !filename.compare(filename.length() - 4, 4, ".bmp")) {
+               std::string imagePath(directoryPath);
+               imagePath += separator();
+               imagePath += filename;
+               _images.push_back(imagePath);
+            }
         }
         closedir (dir);
     } else {
