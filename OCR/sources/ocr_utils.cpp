@@ -28,7 +28,7 @@ NeuralFeed ocr::getInput(const std::string& folder, const std::string& fileName)
 	Mat img = ImagesLoader::openImage(folder, fileName);
 	ImageProcessor processor;
 
-//	processor.clean(img);
+	processor.clean(img);
 	std::vector<double> hdc = std::move(processor.getHorizontalDensityCurve(img, HORIZONTAL_DENSITY_POINTS));
 	std::vector<double> vdc = std::move(processor.getVerticalDensityCurve(img, VERTICAL_DENSITY_POINTS));
 

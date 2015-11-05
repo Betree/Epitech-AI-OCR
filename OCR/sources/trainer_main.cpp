@@ -11,6 +11,9 @@
 # define strerror _strerror
 #else
 # include <dirent.h>
+#include <ImageProcessor.h>
+#include <ImagesLoader.h>
+
 #endif
 
 #include "ocr_utils.hpp"
@@ -64,13 +67,13 @@ int ocr_training(const string& dataset_folder, unsigned int minibatch_size, cons
 	Trainer trainer(&network);
 
 	trainer.setMiniBatchSize(minibatch_size);
-	if (ac > 0)
+	/*if (ac > 0)
 		network = ocr::fromArgv(ac, av);
 	else if (!network.load(network_file))
 	{
 		cerr << "Unable to load network from " << network_file << endl;
 		return 2;
-	}
+	}*/
 
 
 	DIR* dir;
@@ -86,20 +89,34 @@ int ocr_training(const string& dataset_folder, unsigned int minibatch_size, cons
 	while ((ent = readdir(dir)))
 	{
 		string filename(ent->d_name);
-
+		ImageProcessor processor;
+		ImagesLoader loader(dataset_folder);
 		if (filename.length() >= 4 && !filename.compare(filename.length() - 4, 4, ".bmp"))
 		{
-			NeuralFeed output(std::move(ocr::getExpectedOutput(filename)));
+			/*NeuralFeed output(std::move(ocr::getExpectedOutput(filename)));
 
 			if (!output.empty()) {
 				NeuralFeed input(std::move(ocr::getInput(dataset_folder, filename)));
 
 				epoch.push_back(Trainer::InputOutputPair(input, output));
-			}
+			}*/
+			Mat image = loader.openImage(dataset_folder, filename);
+			processor.clean(image);
+			std::pair<double, double> centroid = processor.getCentroid(image);
+			std::pair<double, double> contoursCentroid = processor.getContoursCentroid(image);
+
+			cv::cvtColor(image, image, cv::COLOR_GRAY2RGB);
+			circle(image, Point(centroid.first * image.cols, centroid.second * image.rows), 2, Scalar(0, 255, 100), -1, 8, 0);
+			circle(image, Point(contoursCentroid.first * image.cols, contoursCentroid.second * image.rows), 2, Scalar(255, 0, 0), -1, 8, 0);
+
+			/// Show in a window
+			namedWindow("Contours", WINDOW_NORMAL);
+			imshow("Contours", image);
+			waitKey(0);
 		}
 	}
-
-	closedir(dir);
+	return 0;
+	/*closedir(dir);
 
 	cout << "[DEBUG] Distance before: " << distance(network, epoch) << endl;
 
@@ -116,7 +133,7 @@ int ocr_training(const string& dataset_folder, unsigned int minibatch_size, cons
 	}
 	cout << "Press return to exit" << endl;
 	cin.get();
-	return 0;
+	return 0;*/
 }
 
 int main(int ac, char** av)

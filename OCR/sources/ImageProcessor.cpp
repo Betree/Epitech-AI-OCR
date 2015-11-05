@@ -29,12 +29,13 @@ int ImageProcessor::getCroppingHorizontal(const Mat& image, int xStart, int ySta
     for (int x = xStart; x != xEnd; x += xIncr)
     {
         for (int y = yStart; y != yEnd; y += yIncr) {
-            if (image.at<unsigned char>(y, x) != 255) {
+            if (image.at<unsigned char>(y, x) <= BLACK_THRESHOLD) {
                 return abs(xStart - x);
             }
         }
     }
     //TODO: throw exception : blank image
+    std::cerr << "Warning: Image is blank" << std::endl;
     return 0;
 }
 
@@ -46,12 +47,13 @@ int ImageProcessor::getCroppingVertical(const Mat& image, int xStart, int yStart
     for (int y = yStart; y != yEnd; y += yIncr) {
         for (int x = xStart; x != xEnd; x += xIncr)
         {
-            if (image.at<unsigned char>(y, x) != 255) {
+            if (image.at<unsigned char>(y, x) <= BLACK_THRESHOLD) {
                 return abs(yStart - y);
             }
         }
     }
     //TODO: throw exception : blank image
+    std::cerr << "Warning: Image is blank" << std::endl;
     return 0;
 }
 
@@ -63,7 +65,7 @@ void ImageProcessor::getCroppingProfile(const Mat &image, ImageProcessor::Croppi
     crop.bottom = getCroppingVertical(image, 0, image.rows - 1, image.cols, -1);
 }
 
-std::vector<double> ImageProcessor::getHorizontalDensityCurve(Mat& image, int nbPoints) const {
+std::vector<double> ImageProcessor::getHorizontalDensityCurve(const Mat& image, int nbPoints) const {
     std::vector<double> weightCurve;
     weightCurve.reserve(nbPoints);
 
@@ -101,7 +103,7 @@ std::vector<double> ImageProcessor::getHorizontalDensityCurve(Mat& image, int nb
     return weightCurve;
 }
 
-std::vector<double> ImageProcessor::getVerticalDensityCurve(Mat& image, int nbPoints) const {
+std::vector<double> ImageProcessor::getVerticalDensityCurve(const Mat& image, int nbPoints) const {
     std::vector<double> weightCurve;
     weightCurve.reserve(nbPoints);
 
@@ -151,4 +153,75 @@ void ImageProcessor::completeCurveWithBlank(std::vector<double>& curve, int nbPo
             curve.push_back(0.0);
         appendLeft = !appendLeft;
     }
+}
+
+std::pair<double, double> ImageProcessor::getCentroid(const Mat &image) const {
+    // By default centroid is at the center of picture
+    Point center(image.cols / 2, image.rows / 2);
+    int imageSize = image.cols * image.rows;
+    int nbValues = 0;
+
+    // Calculate centroid
+    for (int imgPos = 0; imgPos < imageSize; ++imgPos)
+    {
+        int x = imgPos % image.cols;
+        int y = imgPos / image.cols;
+        if (image.at<unsigned char>(y, x) <= BLACK_THRESHOLD)
+        {
+            center.x += x;
+            center.y += y;
+            ++nbValues;
+        }
+    }
+
+    if (nbValues)
+    {
+        center.x /= nbValues;
+        center.y /= nbValues;
+    }
+
+    return std::pair<double, double>((double)center.x / (double)image.cols, (double)center.y / image.rows);
+}
+
+std::pair<double, double> ImageProcessor::getContoursCentroid(const Mat &image) const {
+    Mat edges;
+    vector<vector<Point> > contours;
+    vector<Vec4i> hierarchy;
+
+    /// Detect edges
+    Canny(image, edges, BLACK_THRESHOLD, BLACK_THRESHOLD * 2, 3);
+
+    /// Find contours
+    findContours(edges, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, Point(0, 0));
+
+    /// Get the moments
+    vector<Moments> mu(contours.size());
+    for (int i = 0; i < contours.size(); i++)
+        mu[i] = moments(contours[i], false);
+
+    ///  Get the mass center
+    vector<Point2f> mc(contours.size());
+    Point center(0, 0);
+    int nbMasses = 0;
+    for (int i = 0; i < contours.size(); i++)
+    {
+        if (mu[i].m00)
+        {
+            center.x += mu[i].m10 / mu[i].m00;
+            center.y += mu[i].m01 / mu[i].m00;
+            ++nbMasses;
+        }
+    }
+    if (nbMasses)
+    {
+        center.x /= nbMasses;
+        center.y /= nbMasses;
+    }
+    else // Default if no contour has been found : take the center of image
+    {
+        center.x = image.cols / 2;
+        center.y = image.rows / 2;
+    }
+
+    return std::pair<double, double>((double)center.x / (double)image.cols, (double)center.y / image.rows);
 }

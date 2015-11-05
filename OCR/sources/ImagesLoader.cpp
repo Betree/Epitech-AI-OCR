@@ -46,9 +46,9 @@ ImagesLoader::~ImagesLoader() {
 
 Mat ImagesLoader::openImage(const std::string & directory, const std::string & filename)
 {
-	return imread(directory + separator() + filename);
+	return imread(directory + separator() + filename, CV_LOAD_IMAGE_GRAYSCALE);
 }
-
+/*
 bool ImagesLoader::getNextImage(Mat& image) {
     if (_images.size())
     {
@@ -60,3 +60,4 @@ bool ImagesLoader::getNextImage(Mat& image) {
     }
     return false;
 }
+*/
