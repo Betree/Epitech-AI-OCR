@@ -14,13 +14,13 @@
 # include <dirent.h>
 #endif
 
+#include "opencv2/opencv.hpp"
 #include "ocr_utils.hpp"
 #include "Trainer.hpp"
+#include "cvplot.h"
 
 using namespace nn;
 using namespace std;
-
-#include "matplotpp.h"
 
 char* _strerror(int err)
 {
@@ -61,7 +61,7 @@ double distance(const NeuralNetwork& network, const Trainer::Epoch& epoch)
 	return distance / inputCount;
 }
 
-class PlottingTrainer : public MatPlot
+class PlottingTrainer
 {
 private:
 	static const int maxSize = 100;
@@ -76,7 +76,7 @@ private:
 
 public:
 	PlottingTrainer(const string& fileName, NeuralNetwork& network, Trainer& trainer, Trainer::Epoch& epoch)
-		: _fileName(fileName), _network(network), _trainer(trainer), _epoch(epoch)
+		: _fileName(fileName), _network(network), _trainer(trainer), _epoch(epoch), _distances()
 	{
 		this->_distances.push_back(distance(this->_network, this->_epoch) * 1000000.0);
 	}
@@ -93,16 +93,16 @@ public:
 		while (this->_distances.size() > maxSize)
 			this->_distances.pop_front();
 		this->_distanceMutex.unlock();
-		glutPostRedisplay();
+
+		this->DISPLAY();
 	}
 
 	void DISPLAY()
 	{
+		CvPlot::clear("Distance");
 		this->_distanceMutex.lock();
-		dvec vec(this->_distances.begin(), this->_distances.end());
+		CvPlot::plot("Distance", this->_distances.begin(), this->_distances.size(), 1, 60, 255, 60);
 		this->_distanceMutex.unlock();
-
-		plot(vec);
 	}
 };
 
@@ -120,25 +120,9 @@ void trainLoop()
 
 thread trainingThread;
 
-void display()
-{
-	pt->display();
-}
-
-void reshape(int w, int h)
-{
-	pt->reshape(w, h);
-}
-
-void startThread(int value)
+void startThread()
 {
 	trainingThread = thread(&trainLoop);
-}
-
-void reDisplay(int value)
-{
-	glutPostRedisplay();
-	glutTimerFunc(100, &reDisplay, 0);
 }
 
 void stopThread()
@@ -178,7 +162,7 @@ int ocr_training(const string& dataset_folder, unsigned int minibatch_size, cons
 
 		if (filename.length() >= 4 && !filename.compare(filename.length() - 4, 4, ".bmp"))
 		{
-			cout << "Processing " << filename << endl;
+			cout << "Processing " << filename << "... ";
 			NeuralFeed output(std::move(ocr::getExpectedOutput(filename)));
 
 			if (!output.empty()) {
@@ -186,6 +170,7 @@ int ocr_training(const string& dataset_folder, unsigned int minibatch_size, cons
 
 				epoch.push_back(Trainer::InputOutputPair(input, output));
 			}
+			cout << "Done!" << endl;
 		}
 	}
 
@@ -197,14 +182,15 @@ int ocr_training(const string& dataset_folder, unsigned int minibatch_size, cons
 
 	ac += 4;
 	av -= 4;
-	glutInit(&ac, av);
-	glutCreateWindow(100, 100, 400, 300);
-	glutDisplayFunc(&display);
-	glutReshapeFunc(&reshape);
-	glutTimerFunc(1000, &startThread, 0);
-	glutTimerFunc(100, &reDisplay, 0);
-	atexit(&stopThread);
-	glutMainLoop();
+
+	startThread();
+
+	pt->DISPLAY();
+	while (cv::waitKey(0) != -1)
+	{
+	}
+
+	stopThread();
 
 	//cout << "[DEBUG] Distance before: " << distance(network, epoch) << endl;
 

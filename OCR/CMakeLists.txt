@@ -24,10 +24,8 @@ set(TRAINER_SOURCE_FILES
 		includes/dirent.h
 		includes/ImageProcessor.h
 		includes/ImagesLoader.h
-		includes/gl2ps.h
-		includes/matplotpp.h
-		sources/gl2ps.c
-		sources/matplotpp.cc
+		includes/cvplot.h
+		sources/cvplot.cpp
 		sources/ImageProcessor.cpp
 		sources/ImagesLoader.cpp
         sources/ocr_utils.cpp
