@@ -65,7 +65,7 @@ void ImageProcessor::getCroppingProfile(const Mat &image, ImageProcessor::Croppi
     crop.bottom = getCroppingVertical(image, 0, image.rows - 1, image.cols, -1);
 }
 
-std::vector<double> ImageProcessor::getHorizontalDensityCurve(const Mat& image, int nbPoints) const {
+std::vector<double> ImageProcessor::getHorizontalDensityCurve(const Mat& image, unsigned int nbPoints) const {
     std::vector<double> weightCurve;
     weightCurve.reserve(nbPoints);
 
@@ -103,7 +103,7 @@ std::vector<double> ImageProcessor::getHorizontalDensityCurve(const Mat& image, 
     return weightCurve;
 }
 
-std::vector<double> ImageProcessor::getVerticalDensityCurve(const Mat& image, int nbPoints) const {
+std::vector<double> ImageProcessor::getVerticalDensityCurve(const Mat& image, unsigned int nbPoints) const {
     std::vector<double> weightCurve;
     weightCurve.reserve(nbPoints);
 
@@ -141,7 +141,7 @@ std::vector<double> ImageProcessor::getVerticalDensityCurve(const Mat& image, in
     return weightCurve;
 }
 
-void ImageProcessor::completeCurveWithBlank(std::vector<double>& curve, int nbPoints) const
+void ImageProcessor::completeCurveWithBlank(std::vector<double>& curve, unsigned int nbPoints) const
 {
     bool appendLeft = false;
 
@@ -188,22 +188,21 @@ std::pair<double, double> ImageProcessor::getContoursCentroid(const Mat &image) 
     vector<vector<Point> > contours;
     vector<Vec4i> hierarchy;
 
-    /// Detect edges
+    // Detect edges
     Canny(image, edges, BLACK_THRESHOLD, BLACK_THRESHOLD * 2, 3);
 
-    /// Find contours
+    // Find contours
     findContours(edges, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, Point(0, 0));
 
-    /// Get the moments
+    // Get the moments
     vector<Moments> mu(contours.size());
-    for (int i = 0; i < contours.size(); i++)
+    for (unsigned int i = 0; i < contours.size(); i++)
         mu[i] = moments(contours[i], false);
 
-    ///  Get the mass center
-    vector<Point2f> mc(contours.size());
+    //  Get the mass center
     Point center(0, 0);
     int nbMasses = 0;
-    for (int i = 0; i < contours.size(); i++)
+    for (unsigned int i = 0; i < contours.size(); i++)
     {
         if (mu[i].m00)
         {

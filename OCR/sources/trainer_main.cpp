@@ -11,11 +11,10 @@
 # define strerror _strerror
 #else
 # include <dirent.h>
-#include <ImageProcessor.h>
-#include <ImagesLoader.h>
-
 #endif
 
+#include <ImageProcessor.h>
+#include <ImagesLoader.h>
 #include "ocr_utils.hpp"
 #include "Trainer.hpp"
 
