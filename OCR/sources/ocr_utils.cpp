@@ -36,17 +36,23 @@ NeuralNetwork ocr::fromArgv(unsigned int ac, char** argv)
 
 NeuralFeed ocr::getInput(const std::string& folder, const std::string& fileName)
 {
-	Mat img = ImagesLoader::openImage(folder, fileName);
+ 	Mat img = ImagesLoader::openImage(folder, fileName);
 	ImageProcessor processor;
 
 	processor.clean(img);
 	std::vector<double> hdc = std::move(processor.getHorizontalDensityCurve(img, HORIZONTAL_DENSITY_POINTS));
 	std::vector<double> vdc = std::move(processor.getVerticalDensityCurve(img, VERTICAL_DENSITY_POINTS));
+	std::pair<double, double> c = std::move(processor.getCentroid(img));
+	std::pair<double, double> cc = std::move(processor.getContoursCentroid(img));
 
 	NeuralFeed sent;
 
 	sent.insert(sent.end(), hdc.begin(), hdc.end());
 	sent.insert(sent.end(), vdc.begin(), vdc.end());
+	sent.push_back(c.first);
+	sent.push_back(c.second);
+	sent.push_back(cc.first);
+	sent.push_back(cc.second);
 	return sent;
 }
 

@@ -5,7 +5,7 @@ find_package( OpenCV REQUIRED )
 
 if (CMAKE_COMPILER_IS_GNUCXX)
         set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2 -Wall -Wextra")
-endif ()
+endif (CMAKE_COMPILER_IS_GNUCXX)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
@@ -47,7 +47,7 @@ set(SOURCE_FILES
 		includes/ImageProcessor.h
 		includes/ImagesLoader.h
 		includes/OCR.h
-		sources/OCR.h
+		sources/OCR.cpp
 		sources/ImageProcessor.cpp
 		sources/ImagesLoader.cpp
         sources/ocr_utils.cpp

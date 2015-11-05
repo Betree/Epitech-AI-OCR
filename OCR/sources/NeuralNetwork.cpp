@@ -1,9 +1,12 @@
 #include <random>
+#include <stdexcept>
 #include <fstream>
 #include <sstream>
 #include <algorithm>
 #include <cmath>
 #include "NeuralNetwork.hpp"
+
+using namespace std;
 
 namespace nn
 {
@@ -69,14 +72,14 @@ namespace nn
 	NeuronLayer& NeuralNetwork::operator[](unsigned int idx)
 	{
 		if (idx >= this->_layers.size())
-			throw "OUT OF RANGE";
+			throw runtime_error("OUT OF RANGE");
 		return *this->_layers[idx];
 	}
 
 	const NeuronLayer& NeuralNetwork::operator[](unsigned int idx) const
 	{
 		if (idx >= this->_layers.size())
-			throw "OUT OF RANGE";
+			throw runtime_error("OUT OF RANGE");
 		return *this->_layers[idx];
 	}
 
@@ -93,7 +96,7 @@ namespace nn
 	NeuralFeed NeuralNetwork::update(NeuralFeed input) const
 	{
 		if (input.size() != this->_layers[0]->getInputNumber())
-			throw "ERROR PA KOOL";
+			throw runtime_error("input size mismatch");
 
 		std::vector<double> output;
 
@@ -256,7 +259,7 @@ namespace nn
 		if (this != &other)
 		{
 			if (this->_neurons.size() != other._neurons.size())
-				throw 42; // TODO real exception
+				throw runtime_error("OUT OF RANGE");
 			for (unsigned int i = 0; i < this->_neurons.size(); ++i)
 			{
 				*(this->_neurons[i]) = *(other._neurons[i]);
@@ -269,14 +272,14 @@ namespace nn
 	Neuron& NeuronLayer::operator[](unsigned int idx)
 	{
 		if (idx >= this->_neurons.size())
-			throw 42; // TODO real exception
+			throw runtime_error("OUT OF RANGE");
 		return *(this->_neurons[idx]);
 	}
 	
 	const Neuron& NeuronLayer::operator[](unsigned int idx) const
 	{
 		if (idx >= this->_neurons.size())
-			throw 42; // TODO real exception
+			throw runtime_error("OUT OF RANGE");
 		return *(this->_neurons[idx]);
 	}
 	
@@ -331,21 +334,21 @@ namespace nn
 	double& Neuron::getWeight(unsigned int idx)
 	{
 		if (idx >= this->_weights.size())
-			throw 42; // TODO True exception
+			throw runtime_error("OUT OF RANGE");
 		return this->_weights[idx];
 	}
 	
 	double Neuron::getWeight(unsigned int idx) const
 	{
 		if (idx >= this->_weights.size())
-			throw 42; // TODO True exception
+			throw runtime_error("OUT OF RANGE");
 		return this->_weights[idx];
 	}
 
 	void Neuron::setWeight(unsigned int idx, double value)
 	{
 		if (idx >= this->_weights.size())
-			throw 42; // TODO True exception
+			throw runtime_error("OUT OF RANGE");
 		this->_weights[idx] = value;
 	}
 

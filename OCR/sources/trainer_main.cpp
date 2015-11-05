@@ -178,6 +178,7 @@ int ocr_training(const string& dataset_folder, unsigned int minibatch_size, cons
 
 		if (filename.length() >= 4 && !filename.compare(filename.length() - 4, 4, ".bmp"))
 		{
+			cout << "Processing " << filename << endl;
 			NeuralFeed output(std::move(ocr::getExpectedOutput(filename)));
 
 			if (!output.empty()) {

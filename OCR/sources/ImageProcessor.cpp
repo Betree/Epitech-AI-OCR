@@ -2,8 +2,11 @@
 // Created by piouffb on 10/26/15.
 //
 
+#include <vector>
 #include <opencv2/opencv.hpp>
 #include "ImageProcessor.h"
+
+using namespace std;
 
 ImageProcessor::ImageProcessor(void) {
 
@@ -94,8 +97,8 @@ std::vector<double> ImageProcessor::getHorizontalDensityCurve(const Mat& image, 
     // Check everything's fine
     if (lastRowStored != nbRowsAnalysed)
         weightCurve.push_back(densityBuffer / (nbRowsAnalysed - lastRowStored));
-    else if (weightCurve.size() != nbPoints)
-        throw new std::runtime_error("Error: TOO MUCH DATA");
+    else if (weightCurve.size() > nbPoints)
+        throw std::runtime_error("Error: TOO MUCH DATA");
 
     // Complete data with blank, useful when picture is smaller than nbPoints
     if (weightCurve.size() < nbPoints)
@@ -133,7 +136,7 @@ std::vector<double> ImageProcessor::getVerticalDensityCurve(const Mat& image, un
     if (lastColStored != nbColsAnalysed)
         weightCurve.push_back(densityBuffer / (nbColsAnalysed - lastColStored));
     else if (weightCurve.size() > nbPoints)
-        throw new std::runtime_error("Error: too much data");
+        throw std::runtime_error("Error: too much data");
 
     // Complete data with blank, useful when picture is smaller than nbPoints
     if (weightCurve.size() < nbPoints)
