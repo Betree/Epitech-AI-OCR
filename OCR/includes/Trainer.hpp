@@ -20,6 +20,11 @@ namespace nn
 		unsigned int getMiniBatchSize() const;
 		void setMiniBatchSize(unsigned int value);
 
+		NeuralNetwork* getNetwork();
+		const NeuralNetwork* getNetwork() const;
+		void setNetwork(NeuralNetwork* network);
+
+
 		void train(const Epoch& epoch);
 
 		void feed(const InputOutputPair& input);

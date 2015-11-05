@@ -1,4 +1,5 @@
 #include <list>
+#include <string>
 #include <sstream>
 #include "ocr_utils.hpp"
 #include "ImageProcessor.h"
@@ -7,20 +8,30 @@
 using namespace std;
 using namespace nn;
 
-NeuralNetwork ocr::fromArgv(unsigned int ac, char** argv)
+nn::NeuralNetwork ocr::fromArgv(const std::vector<std::string>& args)
 {
 	vector<unsigned int> layers;
 
-	for (size_t i = 0; i < ac; i++)
+	for (size_t i = 0; i < args.size(); i++)
 	{
-		istringstream input(argv[i]);
+		istringstream input(args[i]);
 		int layer;
 
 		if (input >> layer)
 			layers.push_back(layer);
-		--ac;
 	}
 	return NeuralNetwork(OCR_INPUT_NUMBER, OCR_OUTPUT_NUMBER, layers);
+}
+
+NeuralNetwork ocr::fromArgv(unsigned int ac, char** argv)
+{
+	vector<string> args(ac);
+
+	for (size_t i = 0; i < ac; i++)
+	{
+		args[i] = argv[i];
+	}
+	return fromArgv(args);
 }
 
 NeuralFeed ocr::getInput(const std::string& folder, const std::string& fileName)
@@ -71,11 +82,29 @@ char ocr::getExpectedChar(const std::string& fileName)
 	int value = 0;
 	istringstream stream(fileName);
 
-	stream >> value;
+	if (!(stream >> value))
+		value = fileName[0];
 	return value;
 }
 
 char ocr::getChar(const NeuralNetwork& network, const string& directory, const string& filename)
 {
 	return ocr::getCharFromOutput(network.update(getInput(directory, filename)));
+}
+
+bool ocr::ocr_test(const NeuralNetwork& network, const std::string& dir, const std::string& file)
+{
+	NeuralFeed input(std::move(ocr::getInput(dir, file)));
+	NeuralFeed output(std::move(network.update(input)));
+
+	char guess = ocr::getCharFromOutput(output);
+	char expected = ocr::getExpectedChar(file);
+
+	cout << "Testing " << file << ": Got " << guess << " (" << output[guess] * 100.0 << "%)";
+	if (guess != expected)
+	{
+		cout << " expected " << expected << " (" << output[expected] * 100.0 << "%)";
+	}
+	cout << endl;
+	return guess == expected;
 }

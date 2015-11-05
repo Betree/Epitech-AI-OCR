@@ -1,12 +1,14 @@
 #include <sstream>
 #include <iostream>
 #include <cmath>
+#include <mutex>
+#include <thread>
+#include <algorithm>
 #include <string.h>
 
 #ifdef WIN32
 # include <direct.h>
 # include "dirent.h"
-# define chdir _chdir
 # define strerror _strerror
 #else
 # include <dirent.h>
@@ -17,6 +19,8 @@
 
 using namespace nn;
 using namespace std;
+
+#include "matplotpp.h"
 
 char* _strerror(int err)
 {
@@ -55,6 +59,92 @@ double distance(const NeuralNetwork& network, const Trainer::Epoch& epoch)
 	if (inputCount == 0)
 		++inputCount;
 	return distance / inputCount;
+}
+
+class PlottingTrainer : public MatPlot
+{
+private:
+	static const int maxSize = 100;
+
+	const string& _fileName;
+	NeuralNetwork& _network;
+	Trainer& _trainer;
+	Trainer::Epoch& _epoch;
+
+	mutex _distanceMutex;
+	list<double> _distances;
+
+public:
+	PlottingTrainer(const string& fileName, NeuralNetwork& network, Trainer& trainer, Trainer::Epoch& epoch)
+		: _fileName(fileName), _network(network), _trainer(trainer), _epoch(epoch)
+	{
+		this->_distances.push_back(distance(this->_network, this->_epoch) * 1000000.0);
+	}
+
+	void train()
+	{
+		this->_trainer.train(this->_epoch);
+		this->_network.save(this->_fileName);
+
+		double d = distance(this->_network, this->_epoch) * 1000000.0;
+
+		this->_distanceMutex.lock();
+		this->_distances.push_back(d);
+		while (this->_distances.size() > maxSize)
+			this->_distances.pop_front();
+		this->_distanceMutex.unlock();
+		glutPostRedisplay();
+	}
+
+	void DISPLAY()
+	{
+		this->_distanceMutex.lock();
+		dvec vec(this->_distances.begin(), this->_distances.end());
+		this->_distanceMutex.unlock();
+
+		plot(vec);
+	}
+};
+
+PlottingTrainer* pt;
+
+bool keepTraining = true;
+
+void trainLoop()
+{
+	while (keepTraining)
+	{
+		pt->train();
+	}
+}
+
+thread trainingThread;
+
+void display()
+{
+	pt->display();
+}
+
+void reshape(int w, int h)
+{
+	pt->reshape(w, h);
+}
+
+void startThread(int value)
+{
+	trainingThread = thread(&trainLoop);
+}
+
+void reDisplay(int value)
+{
+	glutPostRedisplay();
+	glutTimerFunc(100, &reDisplay, 0);
+}
+
+void stopThread()
+{
+	keepTraining = false;
+	trainingThread.join();
 }
 
 int ocr_training(const string& dataset_folder, unsigned int minibatch_size, const string& network_file, int ac, char** av)
@@ -100,21 +190,36 @@ int ocr_training(const string& dataset_folder, unsigned int minibatch_size, cons
 
 	closedir(dir);
 
-//	cout << "[DEBUG] Distance before: " << distance(network, epoch) << endl;
+	std::random_shuffle(epoch.begin(), epoch.end());
 
-	cout << "Training start." << endl;
+	pt = new PlottingTrainer(network_file, network, trainer, epoch);
 
-	trainer.train(epoch);
+	ac += 4;
+	av -= 4;
+	glutInit(&ac, av);
+	glutCreateWindow(100, 100, 400, 300);
+	glutDisplayFunc(&display);
+	glutReshapeFunc(&reshape);
+	glutTimerFunc(1000, &startThread, 0);
+	glutTimerFunc(100, &reDisplay, 0);
+	atexit(&stopThread);
+	glutMainLoop();
 
-	cout << "Training done." << endl;
+	//cout << "[DEBUG] Distance before: " << distance(network, epoch) << endl;
 
-//	cout << "[DEBUG] Distance after: " << distance(network, epoch) << endl;
+	//cout << "Training start." << endl;
 
-	if (!network.save(network_file))
-	{
-		cerr << "Unable to save network to " << network_file << endl;
-		return 3;
-	}
+	//trainer.train(epoch);
+
+	//cout << "Training done." << endl;
+
+	//cout << "[DEBUG] Distance after: " << distance(network, epoch) << endl;
+
+	//if (!network.save(network_file))
+	//{
+	//	cerr << "Unable to save network to " << network_file << endl;
+	//	return 3;
+	//}
 	return 0;
 }
 

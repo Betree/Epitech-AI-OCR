@@ -1,7 +1,6 @@
 #include <algorithm>
 #include "Trainer.hpp"
 #include "indexed_vector.hpp"
-#include<iostream> // TODO remove
 
 namespace nn
 {
@@ -42,12 +41,26 @@ namespace nn
 		this->_miniBatchSize = value;
 	}
 
+	NeuralNetwork* Trainer::getNetwork()
+	{
+		return this->_network;
+	}
+
+	const NeuralNetwork* Trainer::getNetwork() const
+	{
+		return this->_network;
+	}
+
+	void Trainer::setNetwork(NeuralNetwork* network)
+	{
+		this->_network = network;
+	}
+
 	void Trainer::train(const Trainer::Epoch& in)
 	{
 		std::vector<InputOutputPair> epoch(in);
 
 		this->_miniBatch.clear();
-		std::random_shuffle(epoch.begin(), epoch.end());
 		for (size_t i = 0; i < epoch.size(); i++)
 		{
 			this->feed(epoch[i]);

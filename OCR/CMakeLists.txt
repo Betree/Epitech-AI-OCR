@@ -5,6 +5,10 @@ find_package( OpenCV REQUIRED )
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
+if (MSVC)
+	add_definitions(-D_USE_MATH_DEFINES)
+endif (MSVC)
+
 include_directories(includes)
 include_directories(${OpenCV_INCLUDE_DIRS})
 
@@ -16,6 +20,10 @@ set(TRAINER_SOURCE_FILES
 		includes/dirent.h
 		includes/ImageProcessor.h
 		includes/ImagesLoader.h
+		includes/gl2ps.h
+		includes/matplotpp.h
+		sources/gl2ps.c
+		sources/matplotpp.cc
 		sources/ImageProcessor.cpp
 		sources/ImagesLoader.cpp
         sources/ocr_utils.cpp
@@ -34,6 +42,8 @@ set(SOURCE_FILES
 		includes/dirent.h
 		includes/ImageProcessor.h
 		includes/ImagesLoader.h
+		includes/OCR.h
+		sources/OCR.h
 		sources/ImageProcessor.cpp
 		sources/ImagesLoader.cpp
         sources/ocr_utils.cpp

@@ -45,11 +45,10 @@ namespace nn
 	{
 		if (this != &other)
 		{
-			if (this->_layers.size() != other._layers.size())
-				throw 42; // TODO real exception
-			for (unsigned int i = 0; i < this->_layers.size(); ++i)
+			this->cleanup();
+			for (size_t i = 0; i < other._layers.size(); i++)
 			{
-				*(this->_layers[i]) = *(other._layers[i]);
+				this->_layers.push_back(new NeuronLayer(*other._layers[i]));
 			}
 		}
 		return *this;
@@ -141,7 +140,7 @@ namespace nn
 				{
 					const Neuron& neuron(layer[j]);
 
-					file << ' ' << neuron.getBias();
+					file << '\t' << neuron.getBias();
 					for (size_t k = 0; k < neuron.size(); k++)
 					{
 						file << ' ' << neuron.getWeight(k);
