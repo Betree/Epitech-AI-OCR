@@ -9,6 +9,8 @@
 
 using namespace cv;
 
+#define BLACK_THRESHOLD 100
+
 class ImageProcessor {
 public:
     struct CroppingProfile
@@ -29,7 +31,7 @@ public:
      *
      * returns a vector of nbPoints size filled with densities represented with double between 0.0 and 1.0
      */
-    std::vector<double> getHorizontalDensityCurve(Mat& image, int nbPoints = 10) const;
+    std::vector<double> getHorizontalDensityCurve(const Mat& image, unsigned int nbPoints = 10) const;
 
     /*
      * Get the horizontal density curve (the density for each columns)
@@ -37,7 +39,17 @@ public:
      *
      * returns a vector of nbPoints size filled with densities represented with double between 0.0 and 1.0
      */
-    std::vector<double> getVerticalDensityCurve(Mat& image, int nbPoints = 10) const;
+    std::vector<double> getVerticalDensityCurve(const Mat& image, unsigned int nbPoints = 10) const;
+
+    /*
+     * Returns image centroid
+     */
+    std::pair<double, double> getCentroid(const Mat& image) const;
+
+    /*
+     * Returns the centroid generated with figure's contours
+     */
+    std::pair<double, double> getContoursCentroid(const Mat &image) const;
 
 private:
     /*
@@ -50,7 +62,7 @@ private:
     /*
      * Density curves
      */
-    void completeCurveWithBlank(std::vector<double>& curve, int nbPoints) const;
+    void completeCurveWithBlank(std::vector<double>& curve, unsigned int nbPoints) const;
 };
 
 
