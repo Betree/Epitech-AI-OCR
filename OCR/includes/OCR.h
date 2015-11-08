@@ -3,6 +3,7 @@
 #include <string>
 #include <map>
 #include "NeuralNetwork.hpp"
+#include "Trainer.hpp"
 
 class OCR
 {
@@ -32,6 +33,7 @@ private:
 	int saveNetwork(const Args& args);
 	int testLetterFile(const Args& args);
 	int testDirectory(const Args& args);
+	int trainDirectory(const Args& args);
 
 	bool _exit;
 
@@ -39,5 +41,6 @@ private:
 	std::map<std::string, std::string> _env;
 
 	nn::NeuralNetwork _network;
+	nn::Trainer _trainer;
 };
 

@@ -1,8 +1,12 @@
 #include <algorithm>
 #include <iostream>
+#include <iomanip>
 #include <sstream>
 #include <stdio.h>
 #include <cctype>
+#include <cfloat>
+#include <mutex>
+#include <thread>
 
 #ifdef _WIN32
 # include <direct.h>
@@ -15,9 +19,12 @@
 # define GetCurrentDir getcwd
 #endif
 
+#include "opencv2/opencv.hpp"
+#include "cvplot.h"
 #include "OCR.h"
 #include "ocr_utils.hpp"
 
+using namespace cv;
 using namespace nn;
 using namespace std;
 
@@ -31,7 +38,7 @@ static string toString(const T& value)
 }
 
 OCR::OCR()
-	: _exit(false)
+	: _exit(false), _trainer(&_network)
 {
 	this->_commands["help"] = &OCR::help;
 	this->_commands["exit"] = &OCR::exit;
@@ -44,6 +51,7 @@ OCR::OCR()
 	this->_commands["save"] = &OCR::saveNetwork;
 	this->_commands["test_letter"] = &OCR::testLetterFile;
 	this->_commands["test_directory"] = &OCR::testDirectory;
+	this->_commands["train_directory"] = &OCR::trainDirectory;
 
 	this->_env["OCR_INPUT_NUMBER"] = toString(OCR_INPUT_NUMBER);
 	this->_env["OCR_OUTPUT_NUMBER"] = toString(OCR_OUTPUT_NUMBER);
@@ -390,5 +398,132 @@ int OCR::testDirectory(const Args & args)
 	closedir(dir);
 	if (total > 0)
 		cout << "Succes rate: " << ((double)success * 100.0 / (double)total) << '%' << endl;
+	return 0;
+}
+
+static int getEpochFromDirectory(const string& dataset_folder, Trainer::Epoch& epoch)
+{
+	DIR* dir;
+	struct dirent* ent;
+
+	if (!(dir = opendir(dataset_folder.c_str())))
+	{
+		cerr << "Unable to open " << dataset_folder << endl;
+		return 3;
+	}
+
+	while ((ent = readdir(dir)))
+	{
+		string filename(ent->d_name);
+
+		if (filename.length() >= 4 && !filename.compare(filename.length() - 4, 4, ".bmp"))
+		{
+			NeuralFeed output(std::move(ocr::getExpectedOutput(filename)));
+
+			if (!output.empty()) {
+				NeuralFeed input(std::move(ocr::getInput(dataset_folder, filename)));
+
+				epoch.push_back(Trainer::InputOutputPair(input, output));
+			}
+		}
+	}
+
+	closedir(dir);
+
+	std::random_shuffle(epoch.begin(), epoch.end());
+	return 0;
+}
+
+static double distance(const NeuralNetwork& network, const Trainer::Epoch& epoch)
+{
+	double distance = 0;
+	size_t inputCount = 0;
+
+	for (; inputCount < epoch.size(); ++inputCount)
+	{
+		NeuralFeed output(std::move(network.update(epoch[inputCount].first)));
+		const NeuralFeed& expected(epoch[inputCount].second);
+
+		double tmp = 0;
+		for (size_t i = 0; i < expected.size(); i++)
+			tmp += abs(expected[i] - output[i]);
+		distance += tmp / expected.size();
+	}
+
+	if (inputCount == 0)
+		++inputCount;
+	return distance / inputCount;
+}
+
+static void trainLoop(Trainer& trainer, const Trainer::Epoch& epoch, bool& stop, const string& filename)
+{
+	list<double> distances;
+
+	while (!stop)
+	{
+		cout << "Training start... " << flush;
+		trainer.train(epoch);
+		cout << "Done!" << endl;
+		if (!filename.empty())
+		{
+			cout << "Saving to " << filename << "... " << flush;
+			if (trainer.getNetwork()->save(filename))
+				cout << "Success!" << endl;
+			else
+				cout << "Fail!" << endl;
+		}
+		double d = distance(*trainer.getNetwork(), epoch) * pow(10, 15);
+		cout << "Distance found: " << fixed << setprecision(15) << d << endl;
+		distances.push_back(d);
+		if (distances.size() > 100)
+			distances.pop_front();
+		if (!stop)
+		{
+			CvPlot::clear("Distance");
+			CvPlot::plot("Distance", distances.begin(), distances.size(), 1, 60, 255, 60);
+		}
+	}
+}
+
+int OCR::trainDirectory(const Args& args)
+{
+	if (args.size() < 2 || args.size() > 3)
+	{
+		cerr << "Usage: " << args[0] << " tests_directory [save_file]" << endl;
+		return 1;
+	}
+	if (this->getNetwork().size() == 0 || this->getNetwork()[0].getInputNumber() != OCR_INPUT_NUMBER || this->getNetwork()[this->getNetwork().size() - 1].size() != OCR_OUTPUT_NUMBER)
+	{
+		cerr << "A correct OCR network must be loaded or created before being trained" << endl;
+		return 2;
+	}
+	string filename;
+	int ret = 0;
+
+	if (args.size() == 3)
+		filename = args[2];
+
+	cout << "Generating test epoch... " << flush;
+	Trainer::Epoch epoch;
+	if ((ret = getEpochFromDirectory(args[1], epoch)))
+		return ret;
+	cout << "Done!" << endl;
+	if (epoch.size() == 0)
+	{
+		cerr << "Empty set" << endl;
+		return 4;
+	}
+
+	bool stop = false;
+
+	namedWindow("Distance", WINDOW_NORMAL);
+	thread th(bind(&trainLoop, ref(this->_trainer), ref(epoch), ref(stop), filename));
+
+	while (cv::waitKey(0) != -1)
+	{
+	}
+	stop = true;
+	th.join();
+
 	return 0;
 }

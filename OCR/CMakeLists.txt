@@ -45,6 +45,8 @@ set(SOURCE_FILES
 		includes/ImageProcessor.h
 		includes/ImagesLoader.h
 		includes/OCR.h
+		includes/cvplot.h
+		sources/cvplot.cpp
 		sources/OCR.cpp
 		sources/ImageProcessor.cpp
 		sources/ImagesLoader.cpp

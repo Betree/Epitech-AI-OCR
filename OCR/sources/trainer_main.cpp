@@ -4,7 +4,7 @@
 #include <mutex>
 #include <thread>
 #include <algorithm>
-#include <string.h>
+#include <iomanip>
 
 #ifdef WIN32
 # include <direct.h>
@@ -83,10 +83,23 @@ public:
 
 	void train()
 	{
+		cout << "Training start" << endl;
 		this->_trainer.train(this->_epoch);
-		this->_network.save(this->_fileName);
+		cout << "Training end" << endl;
 
-		double d = distance(this->_network, this->_epoch) * 1000000.0;
+		cout << "Distance start: " << endl;
+		double d = distance(this->_network, this->_epoch);
+		cout << "Distance found: " << d << endl;
+
+		//ostringstream stream;
+		//stream << "Network/ocr_" << fixed << setprecision(12) << d << ".nn" << flush;
+		//cout << "Saving to " << stream.str() << endl;
+		cout << "Saving start" << endl;
+		if (!this->_network.save(this->_fileName))
+			cout << "Saving failed" << endl;
+		cout << "Saving end" << endl;
+
+		d = d * 1000000.0;
 
 		this->_distanceMutex.lock();
 		this->_distances.push_back(d);
@@ -183,6 +196,7 @@ int ocr_training(const string& dataset_folder, unsigned int minibatch_size, cons
 	ac += 4;
 	av -= 4;
 
+	cv::namedWindow("Distance", cv::WINDOW_NORMAL);
 	startThread();
 
 	pt->DISPLAY();

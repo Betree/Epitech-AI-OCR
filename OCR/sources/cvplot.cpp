@@ -77,7 +77,7 @@ Figure::Figure(const string name)
 	axis_color = CV_BLACK;
 	text_color = CV_BLACK;
 
-	figure_size = cvSize(600, 200);
+	figure_size = cvSize(1920, 1080);
 	border_size = 30;
 
 	plots.reserve(10);
@@ -218,10 +218,10 @@ void Figure::DrawAxis(IplImage *output)
 
 	cvLine(output, cvPoint(bs,     x_axis_pos), 
 		           cvPoint(w - bs, x_axis_pos),
-				   axis_color);
+				   axis_color, 3);
 	cvLine(output, cvPoint(bs, h - bs), 
 		           cvPoint(bs, h - bs - gh),
-				   axis_color);
+				   axis_color, 3);
 
 	// Write the scale of the y axis
 	CvFont font;
@@ -286,7 +286,7 @@ void Figure::DrawPlots(IplImage *output)
 			
 			// draw a line between two points
 			if (i >= 1)
-				cvLine(output, prev_point, next_point, iter->color, 1, CV_AA);
+				cvLine(output, prev_point, next_point, iter->color, 3, CV_AA);
 			prev_point = next_point;
 		}
 	}
