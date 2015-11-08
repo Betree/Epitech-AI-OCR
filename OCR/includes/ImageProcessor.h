@@ -5,6 +5,7 @@
 #ifndef OCR_IMAGEPROCESSOR_H
 #define OCR_IMAGEPROCESSOR_H
 
+#include <vector>
 #include <opencv2/opencv.hpp>
 
 using namespace cv;
@@ -76,7 +77,7 @@ private:
 
 private:
     Mat& _image;
-    vector<vector<Point>> _contours;
+    std::vector<std::vector<Point> > _contours;
 };
 
 

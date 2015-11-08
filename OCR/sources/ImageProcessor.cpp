@@ -193,8 +193,8 @@ std::pair<double, double> ImageProcessor::getContoursCentroid()
     int nbMasses = 0;
     for (unsigned int i = 0; i < _contours.size(); i++) {
         if (mu[i].m00) {
-            center.x += mu[i].m10 / mu[i].m00;
-            center.y += mu[i].m01 / mu[i].m00;
+            center.x += (int)(mu[i].m10 / mu[i].m00);
+            center.y += (int)(mu[i].m01 / mu[i].m00);
             ++nbMasses;
         }
     }

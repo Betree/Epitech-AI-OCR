@@ -473,7 +473,7 @@ static void trainLoop(Trainer& trainer, const Trainer::Epoch& epoch, bool& stop,
 				cout << "Fail!" << endl;
 		}
 		double d = distance(*trainer.getNetwork(), epoch) * pow(10, 15);
-		cout << "Distance found: " << fixed << setprecision(15) << d << endl;
+		cout << "Distance found: " << fixed << setprecision(0) << setfill('0') << setw(15) << d << endl;
 		distances.push_back(d);
 		if (distances.size() > 100)
 			distances.pop_front();
