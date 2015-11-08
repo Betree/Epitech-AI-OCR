@@ -179,27 +179,19 @@ std::pair<double, double> ImageProcessor::getCentroid() const
     return std::pair<double, double>((double) center.x / (double) _image.cols, (double) center.y / _image.rows);
 }
 
-std::pair<double, double> ImageProcessor::getContoursCentroid() const
+std::pair<double, double> ImageProcessor::getContoursCentroid()
 {
-    Mat edges;
-    vector<vector<Point> > contours;
-    vector<Vec4i> hierarchy;
-
-    // Detect edges
-    Canny(_image, edges, BLACK_THRESHOLD, BLACK_THRESHOLD * 2, 3);
-
-    // Find contours
-    findContours(edges, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, Point(0, 0));
+    initContours();
 
     // Get the moments
-    vector<Moments> mu(contours.size());
-    for (unsigned int i = 0; i < contours.size(); i++)
-        mu[i] = moments(contours[i], false);
+    vector<Moments> mu(_contours.size());
+    for (unsigned int i = 0; i < _contours.size(); i++)
+        mu[i] = moments(_contours[i], false);
 
     //  Get the mass center
     Point center(0, 0);
     int nbMasses = 0;
-    for (unsigned int i = 0; i < contours.size(); i++) {
+    for (unsigned int i = 0; i < _contours.size(); i++) {
         if (mu[i].m00) {
             center.x += mu[i].m10 / mu[i].m00;
             center.y += mu[i].m01 / mu[i].m00;
@@ -217,4 +209,27 @@ std::pair<double, double> ImageProcessor::getContoursCentroid() const
     }
 
     return std::pair<double, double>((double) center.x / (double) _image.cols, (double) center.y / _image.rows);
+}
+
+double ImageProcessor::getNbContours(unsigned int maxNbContours)
+{
+    initContours();
+    if (_contours.size() >= maxNbContours)
+        return 1.0;
+    return (double)_contours.size() / (double)maxNbContours;
+}
+
+void ImageProcessor::initContours()
+{
+    if (!_contours.size())
+    {
+        Mat edges;
+        vector<Vec4i> hierarchy;
+
+        // Detect edges
+        Canny(_image, edges, BLACK_THRESHOLD, BLACK_THRESHOLD * 2, 3);
+
+        // Find contours
+        findContours(edges, _contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, Point(0, 0));
+    }
 }

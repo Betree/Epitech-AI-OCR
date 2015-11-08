@@ -48,7 +48,13 @@ public:
     /*
      * Returns the centroid generated with figure's contours
      */
-    std::pair<double, double> getContoursCentroid() const;
+    std::pair<double, double> getContoursCentroid();
+
+    /*
+     * Returns the number of contours as a double between 0.0 and 1.0
+     * Return value will be equal to 1.0 if number of contours is above or equal to maxNbContours
+     */
+    double getNbContours(unsigned int maxNbContours = 10);
 
 private:
     /*
@@ -63,8 +69,14 @@ private:
      */
     void completeCurveWithBlank(std::vector<double>& curve, unsigned int nbPoints) const;
 
+    /*
+     * This method should always be called by a method that use _contours
+     */
+    void initContours();
+
 private:
     Mat& _image;
+    vector<vector<Point>> _contours;
 };
 
 
