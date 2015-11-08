@@ -19,8 +19,7 @@ public:
     };
 
 public:
-    ImageProcessor(void);
-    void clean(Mat& image);
+    ImageProcessor(Mat& image);
 
 /*
  * Features extractors
@@ -31,7 +30,7 @@ public:
      *
      * returns a vector of nbPoints size filled with densities represented with double between 0.0 and 1.0
      */
-    std::vector<double> getHorizontalDensityCurve(const Mat& image, unsigned int nbPoints = 10) const;
+    std::vector<double> getHorizontalDensityCurve(unsigned int nbPoints = 10) const;
 
     /*
      * Get the horizontal density curve (the density for each columns)
@@ -39,17 +38,17 @@ public:
      *
      * returns a vector of nbPoints size filled with densities represented with double between 0.0 and 1.0
      */
-    std::vector<double> getVerticalDensityCurve(const Mat& image, unsigned int nbPoints = 10) const;
+    std::vector<double> getVerticalDensityCurve(unsigned int nbPoints = 10) const;
 
     /*
      * Returns image centroid
      */
-    std::pair<double, double> getCentroid(const Mat& image) const;
+    std::pair<double, double> getCentroid() const;
 
     /*
      * Returns the centroid generated with figure's contours
      */
-    std::pair<double, double> getContoursCentroid(const Mat &image) const;
+    std::pair<double, double> getContoursCentroid() const;
 
 private:
     /*
@@ -63,6 +62,9 @@ private:
      * Density curves
      */
     void completeCurveWithBlank(std::vector<double>& curve, unsigned int nbPoints) const;
+
+private:
+    Mat& _image;
 };
 
 
