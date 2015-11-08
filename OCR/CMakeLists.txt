@@ -4,7 +4,7 @@ project(OCR)
 find_package( OpenCV REQUIRED )
 
 if (CMAKE_COMPILER_IS_GNUCXX)
-        set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2 -Wall -Wextra")
+        set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2 -Wall -Wextra -pthread")
 endif (CMAKE_COMPILER_IS_GNUCXX)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
