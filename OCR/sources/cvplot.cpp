@@ -125,7 +125,7 @@ void Figure::Initialize()
 		iter++)
 	{
 		float *p = iter->data;
-		for (int i=0; i < iter->count; i++)
+		for (unsigned int i=0; i < iter->count; i++)
 		{
 			float v = p[i];
 			if (v < y_min)
@@ -206,7 +206,7 @@ void Figure::DrawAxis(IplImage *output)
 
 	// size of graph
 	int gh = h - bs * 2;
-	int gw = w - bs * 2;
+	//int gw = w - bs * 2;
 
 	// draw the horizontal and vertical axis
 	// let x, y axies cross at zero if possible.
@@ -263,7 +263,7 @@ void Figure::DrawPlots(IplImage *output)
 {
 	int bs = border_size;		
 	int h = figure_size.height;
-	int w = figure_size.width;
+	//int w = figure_size.width;
 
 	// draw the curves
 	for (vector<Series>::iterator iter = plots.begin();
@@ -277,7 +277,7 @@ void Figure::DrawPlots(IplImage *output)
 			iter->SetColor(GetAutoColor());
 
 		CvPoint prev_point;
-		for (int i=0; i<iter->count; i++)
+		for (unsigned int i=0; i<iter->count; i++)
 		{
 			int y = cvRound(( p[i] - y_min) * y_scale);
 			int x = cvRound((   i  - x_min) * x_scale);
@@ -300,7 +300,8 @@ void Figure::DrawLabels(IplImage *output, int posx, int posy)
 	cvInitFont(&font,CV_FONT_HERSHEY_PLAIN,0.55,1.0, 0,1,CV_AA);
 	
 	// character size
-	int chw = 6, chh = 8;
+	//int chw = 6;
+	int chh = 8;
 
 	for (vector<Series>::iterator iter = plots.begin();
 		iter != plots.end();
@@ -344,7 +345,7 @@ void Figure::Show()
 
 
 
-bool PlotManager::HasFigure(string wnd)
+bool PlotManager::HasFigure(string)
 {
 	return false;	
 }

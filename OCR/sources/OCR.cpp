@@ -154,13 +154,13 @@ const nn::NeuralNetwork& OCR::getNetwork() const
 	return this->_network;
 }
 
-int OCR::exit(const Args& args)
+int OCR::exit(const Args&)
 {
 	this->_exit = true;
 	return 0;
 }
 
-int OCR::help(const Args& args)
+int OCR::help(const Args&)
 {
 	cout << "List of available commands:" << endl;
 	for (const auto& keyValue : this->_commands)
@@ -461,19 +461,22 @@ static void trainLoop(Trainer& trainer, const Trainer::Epoch& epoch, bool& stop,
 
 	while (!stop)
 	{
-		cout << "Training start... " << flush;
+	  namedWindow("Distance", WINDOW_NORMAL);
+	  //cout << "Training start... " << flush;
 		trainer.train(epoch);
-		cout << "Done!" << endl;
+		//cout << "Done!" << endl;
 		if (!filename.empty())
 		{
-			cout << "Saving to " << filename << "... " << flush;
-			if (trainer.getNetwork()->save(filename))
-				cout << "Success!" << endl;
-			else
-				cout << "Fail!" << endl;
+		  if (!trainer.getNetwork()->save(filename))
+		    cout << "Saving failed!" << endl;
+		  //cout << "Saving to " << filename << "... " << flush;
+		  //if (trainer.getNetwork()->save(filename))
+			  //		cout << "Success!" << endl;
+			  //			else
+			  //	cout << "Fail!" << endl;
 		}
 		double d = distance(*trainer.getNetwork(), epoch) * pow(10, 15);
-		cout << "Distance found: " << fixed << setprecision(0) << setfill('0') << setw(15) << d << endl;
+		//		cout << "Distance found: " << fixed << setprecision(0) << setfill('0') << setw(15) << d << endl;
 		distances.push_back(d);
 		if (distances.size() > 100)
 			distances.pop_front();
@@ -481,8 +484,10 @@ static void trainLoop(Trainer& trainer, const Trainer::Epoch& epoch, bool& stop,
 		{
 			CvPlot::clear("Distance");
 			CvPlot::plot("Distance", distances.begin(), distances.size(), 1, 60, 255, 60);
+			waitKey(1);
 		}
 	}
+	destroyWindow("Distance");
 }
 
 int OCR::trainDirectory(const Args& args)
@@ -516,14 +521,13 @@ int OCR::trainDirectory(const Args& args)
 
 	bool stop = false;
 
-	namedWindow("Distance", WINDOW_NORMAL);
 	thread th(bind(&trainLoop, ref(this->_trainer), ref(epoch), ref(stop), filename));
 
-	while (cv::waitKey(0) != -1)
-	{
-	}
+	string line;
+	while (getline(cin, line) && line != "stop")
+	  {}
 	stop = true;
 	th.join();
-
+	
 	return 0;
 }
