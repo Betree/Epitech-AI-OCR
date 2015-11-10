@@ -135,7 +135,7 @@ void Figure::Initialize()
 		}
 
 		if (x_max < iter->count)
-			x_max = iter->count;
+			x_max = (float)iter->count;
 	}
 
 	// calculate zoom scale

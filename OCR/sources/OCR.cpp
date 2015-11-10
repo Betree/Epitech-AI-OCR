@@ -461,24 +461,28 @@ static void trainLoop(Trainer& trainer, const Trainer::Epoch& epoch, bool& stop,
 
 	while (!stop)
 	{
-	  namedWindow("Distance", WINDOW_NORMAL);
-	  //cout << "Training start... " << flush;
+		namedWindow("Distance", WINDOW_NORMAL);
+		//cout << "Training start... " << flush;
 		trainer.train(epoch);
 		//cout << "Done!" << endl;
 		if (!filename.empty())
 		{
-		  if (!trainer.getNetwork()->save(filename))
-		    cout << "Saving failed!" << endl;
-		  //cout << "Saving to " << filename << "... " << flush;
-		  //if (trainer.getNetwork()->save(filename))
-			  //		cout << "Success!" << endl;
-			  //			else
-			  //	cout << "Fail!" << endl;
+			if (!trainer.getNetwork()->save(filename))
+				cout << "Saving failed!" << endl;
+			//cout << "Saving to " << filename << "... " << flush;
+			//if (trainer.getNetwork()->save(filename))
+				//		cout << "Success!" << endl;
+				//			else
+				//	cout << "Fail!" << endl;
 		}
 		double d = distance(*trainer.getNetwork(), epoch) * pow(10, 15);
-		//		cout << "Distance found: " << fixed << setprecision(0) << setfill('0') << setw(15) << d << endl;
+		//	ios state(nullptr);
+		//state.copyfmt(cout);
+		//cout << "Distance found: " << fixed << setprecision(0) << setfill('0') << setw(15) << d << endl;
+		//cout.copyfmt(state);
+
 		distances.push_back(d);
-		if (distances.size() > 100)
+		if (distances.size() > 1000)
 			distances.pop_front();
 		if (!stop)
 		{
@@ -525,9 +529,10 @@ int OCR::trainDirectory(const Args& args)
 
 	string line;
 	while (getline(cin, line) && line != "stop")
-	  {}
+	{
+	}
 	stop = true;
 	th.join();
-	
+
 	return 0;
 }
