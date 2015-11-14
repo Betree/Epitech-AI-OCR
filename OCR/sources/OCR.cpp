@@ -455,43 +455,33 @@ static double distance(const NeuralNetwork& network, const Trainer::Epoch& epoch
 	return distance / inputCount;
 }
 
-static void trainLoop(Trainer& trainer, const Trainer::Epoch& epoch, bool& stop, const string& filename)
+static void trainLoop(Trainer& trainer, const Trainer::Epoch& epoch, bool& stop, const string& filename, mutex& lock, list<double>& distances)
 {
-	list<double> distances;
-
 	while (!stop)
 	{
-		namedWindow("Distance", WINDOW_NORMAL);
-		//cout << "Training start... " << flush;
+		cout << "Training start... " << flush;
 		trainer.train(epoch);
-		//cout << "Done!" << endl;
+		cout << "Done!" << endl;
 		if (!filename.empty())
 		{
-			if (!trainer.getNetwork()->save(filename))
-				cout << "Saving failed!" << endl;
-			//cout << "Saving to " << filename << "... " << flush;
-			//if (trainer.getNetwork()->save(filename))
-				//		cout << "Success!" << endl;
-				//			else
-				//	cout << "Fail!" << endl;
+			cout << "Saving to " << filename << "... " << flush;
+			if (trainer.getNetwork()->save(filename))
+				cout << "Success!" << endl;
+			else
+				cout << "Fail!" << endl;
 		}
 		double d = distance(*trainer.getNetwork(), epoch) * pow(10, 15);
-		//	ios state(nullptr);
-		//state.copyfmt(cout);
-		//cout << "Distance found: " << fixed << setprecision(0) << setfill('0') << setw(15) << d << endl;
-		//cout.copyfmt(state);
+			ios state(nullptr);
+		state.copyfmt(cout);
+		cout << "Distance found: " << fixed << setprecision(0) << setfill('0') << setw(15) << d << endl;
+		cout.copyfmt(state);
 
+		lock.lock();
 		distances.push_back(d);
 		if (distances.size() > 1000)
 			distances.pop_front();
-		if (!stop)
-		{
-			CvPlot::clear("Distance");
-			CvPlot::plot("Distance", distances.begin(), distances.size(), 1, 60, 255, 60);
-			waitKey(1);
-		}
+		lock.unlock();
 	}
-	destroyWindow("Distance");
 }
 
 int OCR::trainDirectory(const Args& args)
@@ -525,12 +515,21 @@ int OCR::trainDirectory(const Args& args)
 
 	bool stop = false;
 
-	thread th(bind(&trainLoop, ref(this->_trainer), ref(epoch), ref(stop), filename));
+	mutex lock;
+	list<double> distances;
+	thread th(bind(&trainLoop, ref(this->_trainer), ref(epoch), ref(stop), filename, ref(lock), ref(distances)));
 
 	string line;
-	while (getline(cin, line) && line != "stop")
+	do
 	{
-	}
+		namedWindow("Distance", WINDOW_NORMAL);
+		CvPlot::clear("Distance");
+		lock.lock();
+		cout << "Distance count: " << distances.size() << endl;
+		CvPlot::plot("Distance", distances.begin(), distances.size(), 1, 60, 255, 60);
+		lock.unlock();
+	} while (waitKey(100) != 27);
+	destroyWindow("Distance");
 	stop = true;
 	th.join();
 
