@@ -525,10 +525,9 @@ int OCR::trainDirectory(const Args& args)
 		namedWindow("Distance", WINDOW_NORMAL);
 		CvPlot::clear("Distance");
 		lock.lock();
-		cout << "Distance count: " << distances.size() << endl;
 		CvPlot::plot("Distance", distances.begin(), distances.size(), 1, 60, 255, 60);
 		lock.unlock();
-	} while (waitKey(100) != 27);
+	} while ((waitKey(100) & 0xFF) != 27);
 	destroyWindow("Distance");
 	stop = true;
 	th.join();
