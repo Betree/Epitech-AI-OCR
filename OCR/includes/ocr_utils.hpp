@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <string>
+#include <opencv2/opencv.hpp>
 #include "NeuralNetwork.hpp"
 
 #define VERTICAL_DENSITY_POINTS 10
@@ -17,6 +18,8 @@ namespace ocr
 	nn::NeuralNetwork fromArgv(unsigned int ac, char** argv);
 
 	nn::NeuralFeed getInput(const std::string& folder, const std::string& fileName);
+	nn::NeuralFeed getInput(cv::Mat& img);
+	nn::NeuralFeed getOutput(const nn::NeuralNetwork& network, cv::Mat& img);
 
 	char getCharFromOutput(const nn::NeuralFeed& output);
 
