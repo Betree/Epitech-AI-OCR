@@ -36,7 +36,8 @@ NeuralNetwork ocr::fromArgv(unsigned int ac, char** argv)
 
 NeuralFeed ocr::getInput(const std::string& folder, const std::string& fileName)
 {
- 	return getInput(ImagesLoader::openImage(folder, fileName));
+ 	Mat m = ImagesLoader::openImage(folder, fileName);
+	return getInput(m);
 }
 
 nn::NeuralFeed ocr::getInput(cv::Mat &img)
