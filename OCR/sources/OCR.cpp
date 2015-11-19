@@ -23,6 +23,7 @@
 #include "cvplot.h"
 #include "OCR.h"
 #include "ocr_utils.hpp"
+#include "TextImageProcessor.hpp"
 
 using namespace cv;
 using namespace nn;
@@ -52,6 +53,7 @@ OCR::OCR()
 	this->_commands["test_letter"] = &OCR::testLetterFile;
 	this->_commands["test_directory"] = &OCR::testDirectory;
 	this->_commands["train_directory"] = &OCR::trainDirectory;
+	this->_commands["test_image"] = &OCR::testImage;
 
 	this->_env["OCR_INPUT_NUMBER"] = toString(OCR_INPUT_NUMBER);
 	this->_env["OCR_OUTPUT_NUMBER"] = toString(OCR_OUTPUT_NUMBER);
@@ -532,5 +534,26 @@ int OCR::trainDirectory(const Args& args)
 	stop = true;
 	th.join();
 
+	return 0;
+}
+
+int			OCR::testImage(const Args& args)
+{
+	if (this->getNetwork().size() == 0 || this->getNetwork()[0].getInputNumber() != OCR_INPUT_NUMBER || this->getNetwork()[this->getNetwork().size() - 1].size() != OCR_OUTPUT_NUMBER)
+	{
+		cerr << "A correct OCR network must be loaded or created before processing an image" << endl;
+		return 2;
+	}
+	if (args.size() < 2)
+	{
+		cout << "No input image !" << endl;
+		return -1;
+	}
+
+	for (int i = 1; i < args.size(); ++i)
+	{
+		if (ocr::computeImage(this->getNetwork(), args[i], cout) == -1)
+			cout << "The file \"" + args[i] + "\" does not exist" << endl;
+	}
 	return 0;
 }

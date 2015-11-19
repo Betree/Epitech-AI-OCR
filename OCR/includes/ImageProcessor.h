@@ -10,7 +10,7 @@
 
 using namespace cv;
 
-#define BLACK_THRESHOLD 100
+#define BLACK_THRESHOLD 175
 
 class ImageProcessor {
 public:

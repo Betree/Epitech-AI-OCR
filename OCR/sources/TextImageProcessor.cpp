@@ -1,62 +1,55 @@
 #include "TextImageProcessor.hpp"
 
-
-TextImageProcessor::TextImageProcessor()
-{
-	this->_fileName.clear();
-	this->_drawCreatedHisto = false;
-	this->debugDisplay = false;
-	this->displayBoundedImage = false;
-}
-
-TextImageProcessor::TextImageProcessor(string fileName) : _fileName(fileName)
+TextImageProcessor::TextImageProcessor(const nn::NeuralNetwork &neuralNetwork) : _nn(neuralNetwork)
 {
 	this->_drawCreatedHisto = false;
 	this->debugDisplay = false;
 	this->displayBoundedImage = false;
 }
 
-string const TextImageProcessor::getFileName() const
+void TextImageProcessor::startProcessing(Mat &img)
 {
-	return this->_fileName;
-}
-
-void TextImageProcessor::setFileName(string const fileName)
-{
-	this->_fileName = fileName;
-}
-
-void TextImageProcessor::startProcessing()
-{
-	if (this->_fileName.empty())
-		return;
-
 	Mat binary;
 	vector<vector<Mat> > wordInOrder;
-	cv::Mat img = cv::imread(this->_fileName);
-
 
 	createBinaryNegativeImage(&img, &binary);
+	this->_originalImgSize = binary.size();
+
 	vector<pair<Mat, Point> > lines = detectLines(binary);
 
+
 	for (int i = 0; i < lines.size(); ++i)
-	{	
 		wordInOrder.push_back(detectWords(lines[i].first));
 
-		if (displayBoundedImage)
+
+	vector<Mat> letters;
+	Mat sub_mat;
+	for (int i = 0; i < wordInOrder.size(); ++i)
+	{
+		for (int j = 0; j < wordInOrder[i].size(); ++j)
 		{
-			line(binary, Point(0, lines[i].second.x), Point(binary.size().width - 1, lines[i].second.x), Scalar(255));
-			line(binary, Point(0, lines[i].second.y), Point(binary.size().width - 1, lines[i].second.y), Scalar(125));
+			letters = detectLetters(wordInOrder[i][j]);
+			for (Mat& letter : letters)
+			{
+				sub_mat = Mat::ones(letter.size(), letter.type()) * 255;
+				subtract(sub_mat, letter, letter);
+				//imshow("Letter", letter);
+				//waitKey(0);
+				//destroyWindow("Letter");
+				cout << ocr::getCharFromOutput(ocr::getOutput(this->_nn, letter)) << flush;
+			}
+			cout << " ";
 		}
+		cout << endl;
 	}
 
-
-	// Display the new binary image
 	if (displayBoundedImage)
 	{
 		namedWindow("Binary Image", 1);
 		imshow("Binary Image", binary);
+		waitKey(0);
 	}
+	// Display the new binary image
 }
 
 void TextImageProcessor::createBinaryNegativeImage(Mat *img, Mat *output) const
@@ -97,7 +90,7 @@ void TextImageProcessor::createBinaryNegativeImage(Mat *img, Mat *output) const
 	threshold(negative, *output, Itreshold, 255, 3);
 }
 
-Mat TextImageProcessor::createSmoothedHistogram(const Mat img, int t, int blurHardness, bool gaussian) const
+Mat TextImageProcessor::createSmoothedHistogram(const Mat &img, int t, int blurHardness, bool gaussian) const
 {
 	//col or row histogram?  
 	int sz = (t) ? img.rows : img.cols;
@@ -155,7 +148,7 @@ Mat TextImageProcessor::createSmoothedHistogram(const Mat img, int t, int blurHa
 	return mhist;
 }
 
-int TextImageProcessor::getNextMinima(const Mat vhist, unsigned int index, int direction, unsigned int treshold) const
+int TextImageProcessor::getNextMinima(const Mat &vhist, unsigned int index, int direction, unsigned int treshold) const
 {
 	int size = direction ? vhist.cols : vhist.rows;
 	while (index < size && vhist.at<unsigned char>(index) > treshold)
@@ -165,7 +158,7 @@ int TextImageProcessor::getNextMinima(const Mat vhist, unsigned int index, int d
 	return index;
 }
 
-int TextImageProcessor::getNextOverMinima(const Mat vhist, unsigned int index, int direction, unsigned int treshold) const
+int TextImageProcessor::getNextOverMinima(const Mat &vhist, unsigned int index, int direction, unsigned int treshold) const
 {
 	int size = direction ? vhist.cols : vhist.rows;
 	while (index < size && vhist.at<unsigned char>(index) <= treshold)
@@ -175,7 +168,7 @@ int TextImageProcessor::getNextOverMinima(const Mat vhist, unsigned int index, i
 	return index;
 }
 
-vector<Point> TextImageProcessor::getBoundingOfLines(const Mat img, const Mat vhist) const
+vector<Point> TextImageProcessor::getBoundingOfLines(const Mat &img, const Mat &vhist) const
 {
 	int index = 0;
 	int oldIndex = 0;
@@ -199,11 +192,12 @@ vector<Point> TextImageProcessor::getBoundingOfLines(const Mat img, const Mat vh
 	return ret;
 }
 
-vector<Point> TextImageProcessor::getBoundingOfWords(const Mat img, const Mat hist) const
+vector<Point> TextImageProcessor::getBoundingOfWords(const Mat &img, const Mat &hist) const
 {
 	int index = 0;
 	int oldIndex = 0;
 	vector<Point> ret;
+
 	while (index != -1)
 	{
 		index = getNextOverMinima(hist, index, VERTICAL, 0);
@@ -219,7 +213,81 @@ vector<Point> TextImageProcessor::getBoundingOfWords(const Mat img, const Mat hi
 	return ret;
 }
 
-vector<Mat> TextImageProcessor::detectWords(Mat lines)
+vector<Point> TextImageProcessor::getBoundingOfLetters(const Mat& img, Mat& hist) const
+{
+	int index = 0;
+	int oldIndex = 0;
+	int tmp;
+	int counter = 0;
+	vector<Point> ret;
+
+	for (int i = 0; i < hist.cols; ++i)
+	{
+		hist.at<unsigned char>(i) = hist.at<unsigned char>(i) * 10;
+	}
+	while (index != -1)
+	{
+		index = getNextOverMinima(hist, index, VERTICAL, 18);
+		if (index == -1) break;
+		if (debugDisplay)
+			cout << "Debut de la lettre : " << index << ", ";
+		oldIndex = index;
+		index = getNextMinima(hist, index, VERTICAL, 18);
+		if (debugDisplay)
+			cout << " fin de la lettre : " << index << endl;
+		if (index == -1) break;
+
+		while (index - oldIndex < this->_originalImgSize.width / 80)
+		{
+			tmp = getNextOverMinima(hist, index, VERTICAL, 18);
+			if (tmp != -1)
+				index = tmp;
+			else break;
+			if (index - oldIndex < this->_originalImgSize.width / 80)
+			{
+				tmp = getNextMinima(hist, index, VERTICAL, 18);
+				if (tmp != -1)
+					index = tmp;
+				else break;
+			}
+		}
+		if (index - oldIndex > this->_originalImgSize.width / 50 || counter == 0)
+		{
+			ret.push_back(Point(oldIndex, index));
+			++counter;
+		}
+	}
+	return ret;
+}
+
+
+vector<Mat>	TextImageProcessor::detectLetters(Mat& word)
+{
+	Mat extractedLetterHist;
+	vector<Point> letterBounding;
+	vector<Mat> ret;
+
+	extractedLetterHist = createSmoothedHistogram(word, HORIZONTAL, 1);
+	letterBounding = getBoundingOfLetters(word, extractedLetterHist);
+
+	Mat extractedLetter;
+	for (int i = 0; i < letterBounding.size(); ++i)
+	{
+		//get sub image of letters out of the main picture
+		extractedLetter = word(Rect(letterBounding[i].x, 0, letterBounding[i].y - letterBounding[i].x, word.rows));
+		ret.push_back(extractedLetter);
+
+		if (displayBoundedImage)
+		{
+			line(word, Point(letterBounding[i].x - 1, 0), Point(letterBounding[i].x - 1, word.rows - 1), Scalar(255));
+			line(word, Point(letterBounding[i].y + 1, 0), Point(letterBounding[i].y + 1, word.rows - 1), Scalar(125));
+		}
+	}
+	return ret;
+}
+
+
+vector<Mat> TextImageProcessor::detectWords(Mat &lines)
 {
 	Mat extractedLineHHist;
 	vector<Point> wordBounding;
@@ -238,14 +306,14 @@ vector<Mat> TextImageProcessor::detectWords(Mat lines)
 		//
 		if (displayBoundedImage)
 		{
-			line(lines, Point(wordBounding[i].x, 0), Point(wordBounding[i].x, lines.rows - 1), Scalar(255));
-			line(lines, Point(wordBounding[i].y, 0), Point(wordBounding[i].y, lines.rows - 1), Scalar(125));
+			line(lines, Point(wordBounding[i].x - 1, 0), Point(wordBounding[i].x - 1, lines.rows - 1), Scalar(255));
+			line(lines, Point(wordBounding[i].y + 1, 0), Point(wordBounding[i].y + 1, lines.rows - 1), Scalar(125));
 		}
 	}
 	return ret;
 }
 
-vector<pair<Mat, Point> > TextImageProcessor::detectLines(cv::Mat binary)
+vector<pair<Mat, Point> > TextImageProcessor::detectLines(cv::Mat &binary)
 {
 	Mat vhist = createSmoothedHistogram(binary, VERTICAL);
 
@@ -258,6 +326,12 @@ vector<pair<Mat, Point> > TextImageProcessor::detectLines(cv::Mat binary)
 		//get sub image of lines out of the main picture
 		extractedLine = binary(Rect(0, boundingLines[i].x, binary.cols, boundingLines[i].y - boundingLines[i].x));
 		ret.push_back(pair<Mat, Point>(extractedLine, boundingLines[i]));
+		if (displayBoundedImage)
+		{
+			line(binary, Point(0, boundingLines[i].x - 1), Point(binary.size().width - 1, boundingLines[i].x - 1), Scalar(255));
+			line(binary, Point(0, boundingLines[i].y + 1), Point(binary.size().width - 1, boundingLines[i].y + 1), Scalar(125));
+		}
+
 	}
 
 	return ret;

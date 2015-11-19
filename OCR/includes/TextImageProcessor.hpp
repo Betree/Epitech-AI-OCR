@@ -18,11 +18,9 @@ using namespace std;
 class TextImageProcessor
 {
 private:
-	nn::NeuralNetwork	_netowrk;
-	string				_networkFileName;
-
-	string				_fileName;
 	bool				_drawCreatedHisto;
+	Size				_originalImgSize;
+	const nn::NeuralNetwork	&_nn;
 
 public:
 
@@ -31,24 +29,21 @@ public:
 	// set to true to display the image with bounded words
 	bool				displayBoundedImage;
 
-	TextImageProcessor();
-	TextImageProcessor(string const fileName);
-
-	string const getFileName() const;
-	void setFileName(string const);
-
-	void startProcessing();
+	TextImageProcessor(const nn::NeuralNetwork &);
+	void startProcessing(Mat&);
 
 private:
 
 	void createBinaryNegativeImage(Mat *, Mat *) const;
-	Mat createSmoothedHistogram(Mat, int, int = 7, bool = false) const;
-	int getNextMinima(const Mat, unsigned int, int, unsigned int = 0) const;
-	int getNextOverMinima(const Mat, unsigned int, int, unsigned int = 0) const;
-	vector<Point> getBoundingOfLines(const Mat, const Mat) const;
-	vector<Point> getBoundingOfWords(const Mat, const Mat) const;
-	vector<Mat> detectWords(Mat);
-	vector<pair<Mat, Point> > detectLines(Mat);
+	Mat createSmoothedHistogram(const Mat&, int, int = 7, bool = false) const;
+	int getNextMinima(const Mat&, unsigned int, int, unsigned int = 0) const;
+	int getNextOverMinima(const Mat&, unsigned int, int, unsigned int = 0) const;
+	vector<Point> getBoundingOfLines(const Mat&, const Mat&) const;
+	vector<Point> getBoundingOfWords(const Mat&, const Mat&) const;
+	vector<Point> getBoundingOfLetters(const Mat&, Mat&) const;
+	vector<Mat> detectWords(Mat&);
+	vector<pair<Mat, Point> > detectLines(Mat&);
+	vector<Mat> detectLetters(Mat&);
 };
 
 #endif

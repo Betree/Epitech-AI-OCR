@@ -29,4 +29,6 @@ namespace ocr
 	char getChar(const nn::NeuralNetwork& network, const std::string& directory, const std::string& filename);
 
 	bool ocr_test(const nn::NeuralNetwork& network, const std::string& dir, const std::string& file);
+	
+	int	computeImage(const nn::NeuralNetwork& network, const std::string& imgFile, std::ostream& os);
 }

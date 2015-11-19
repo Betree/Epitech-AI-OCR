@@ -31,10 +31,14 @@ int ImageProcessor::getCroppingHorizontal(const Mat& image, int xStart, int ySta
             if (image.at<unsigned char>(y, x) <= BLACK_THRESHOLD) {
                 return abs(xStart - x);
             }
+			else if (image.at<unsigned char>(y, x) != 255)
+			{
+//				cout << (unsigned int)image.at<unsigned char>(y, x) << endl;
+			}
         }
     }
     //TODO: throw exception : blank image
-    std::cerr << "Warning: Image is blank" << std::endl;
+ //   std::cerr << "Warning: Image is blank" << std::endl;
     return 0;
 }
 
@@ -51,7 +55,7 @@ int ImageProcessor::getCroppingVertical(const Mat& image, int xStart, int yStart
         }
     }
     //TODO: throw exception : blank image
-    std::cerr << "Warning: Image is blank" << std::endl;
+   // std::cerr << "Warning: Image is blank" << std::endl;
     return 0;
 }
 

@@ -34,6 +34,7 @@ private:
 	int testLetterFile(const Args& args);
 	int testDirectory(const Args& args);
 	int trainDirectory(const Args& args);
+	int testImage(const Args& args);
 
 	bool _exit;
 

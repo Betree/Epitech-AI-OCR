@@ -4,6 +4,7 @@
 #include "ocr_utils.hpp"
 #include "ImageProcessor.h"
 #include "ImagesLoader.h"
+#include "TextImageProcessor.hpp"
 
 using namespace std;
 using namespace nn;
@@ -124,4 +125,23 @@ bool ocr::ocr_test(const NeuralNetwork& network, const std::string& dir, const s
 	}
 	cout << endl;
 	return guess == expected;
+}
+
+int ocr::computeImage(const nn::NeuralNetwork &nn, const string &imgFile, ostream &os)
+{
+	TextImageProcessor processor(nn);
+	Mat img = imread(imgFile);
+	if (img.data == NULL)
+		return -1;
+
+	processor.displayBoundedImage = false;
+	processor.debugDisplay = false;
+	processor.startProcessing(img);
+	
+	//imshow("Original Img", img);
+	//waitKey(0);
+	//destroyWindow("Original Img");
+
+
+	return 0;
 }
