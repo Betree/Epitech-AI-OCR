@@ -18,18 +18,18 @@ using namespace std;
 class TextImageProcessor
 {
 private:
-	nn::NeuralNetwork _netowrk;
+	nn::NeuralNetwork	_netowrk;
 	string				_networkFileName;
 
-	string _fileName;
-	bool _drawCreatedHisto;
+	string				_fileName;
+	bool				_drawCreatedHisto;
 
 public:
 
 	// set to true to display debug output
-	bool debugDisplay;
+	bool				debugDisplay;
 	// set to true to display the image with bounded words
-	bool displayBoundedImage;
+	bool				displayBoundedImage;
 
 	TextImageProcessor();
 	TextImageProcessor(string const fileName);
@@ -40,6 +40,7 @@ public:
 	void startProcessing();
 
 private:
+
 	void createBinaryNegativeImage(Mat *, Mat *) const;
 	Mat createSmoothedHistogram(Mat, int, int = 7, bool = false) const;
 	int getNextMinima(const Mat, unsigned int, int, unsigned int = 0) const;

@@ -15,3 +15,8 @@ OCR/CMakeFiles/
 OCR/Debug/
 OCR/Release/
 OCR/Win32/
+OCR/*.bmp
+OCR/*.jpg
+OCR/OCR.v12.suo
+
+
