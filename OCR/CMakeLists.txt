@@ -45,6 +45,7 @@ set(SOURCE_FILES
 		includes/ImageProcessor.h
 		includes/ImagesLoader.h
 		includes/OCR.h
+		includes/TextImageProcessor.hpp
 		includes/cvplot.h
 		sources/cvplot.cpp
 		sources/OCR.cpp
@@ -53,6 +54,7 @@ set(SOURCE_FILES
         sources/ocr_utils.cpp
         sources/NeuralNetwork.cpp
         sources/Trainer.cpp
+	sources/TextImageProcessor.cpp
         sources/main.cpp)
 
 add_executable(ocr ${SOURCE_FILES})

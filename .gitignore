@@ -1,1 +1,17 @@
 .idea
+OCR/ALL_BUILD.vcxproj
+OCR/ALL_BUILD.vcxproj.filters
+OCR/ocr.dir
+OCR/cmake_install.cmake
+OCR/CMakeCache.txt
+OCR/OCR.opensdf
+OCR/OCR.sdf
+OCR/OCR.sln
+OCR/ocr.vcxproj
+OCR/ocr.vcxproj.filters
+OCR/ZERO_CHECK.vcxproj
+OCR/ZERO_CHECK.vcxproj.filters
+OCR/CMakeFiles/
+OCR/Debug/
+OCR/Release/
+OCR/Win32/
